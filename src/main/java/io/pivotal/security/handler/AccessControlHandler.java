@@ -3,16 +3,19 @@ package io.pivotal.security.handler;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialNameDataService;
+import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class AccessControlHandler {
@@ -36,10 +39,10 @@ public class AccessControlHandler {
       final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
       permissionService.verifyAclReadPermission(userContext, name);
-
+      List<AccessControlEntry> accessControlEntries = createViews(accessControlDataService.getAccessControlList(credentialName));
       return new AccessControlListResponse(
           credentialName.getName(),
-          accessControlDataService.getAccessControlList(credentialName)
+          accessControlEntries
       );
     } catch (PermissionException pe){
       // lack of permissions should be indistinguishable from not found.
@@ -57,16 +60,34 @@ public class AccessControlHandler {
     accessControlDataService
         .saveAccessControlEntries(credentialName, accessControlEntryList);
 
-    return new AccessControlListResponse(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
+    List<AccessEntryData> accessControlList = accessControlDataService
+        .getAccessControlList(credentialName);
+    return new AccessControlListResponse(credentialName.getName(), createViews(accessControlList));
   }
 
-  public AccessControlEntry deleteAccessControlEntries(UserContext userContext, String name, String actor) {
-    if (!permissionService.hasAclWritePermission(userContext, name)) {
+  public void deleteAccessControlEntries(UserContext userContext, AccessEntryData accessEntryData) {
+    if (!permissionService.hasAclWritePermission(userContext, accessEntryData.getCredentialName().getName())) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
-    return accessControlDataService.deleteAccessControlEntry(actor, credentialName);
+    accessControlDataService.deleteAccessControlEntry(accessEntryData);
   }
 
+  private AccessControlEntry createViewFor(AccessEntryData data) {
+    if (data == null ) {
+      return null;
+    }
+    AccessControlEntry entry = new AccessControlEntry();
+    List<AccessControlOperation> operations = data.generateAccessControlOperations();
+    entry.setAllowedOperations(operations);
+    entry.setActor(data.getActor());
+    return entry;
+  }
+
+  private List<AccessControlEntry> createViews(List<AccessEntryData> accessEntryDataList) {
+    return accessEntryDataList
+        .stream()
+        .map(this::createViewFor)
+        .collect(Collectors.toList());
+  }
 }

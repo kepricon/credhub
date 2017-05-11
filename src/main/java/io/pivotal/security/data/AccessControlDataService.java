@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class AccessControlDataService {
@@ -27,15 +26,15 @@ public class AccessControlDataService {
     this.credentialNameDataService = credentialNameDataService;
   }
 
-  public List<AccessControlEntry> getAccessControlList(String name) {
+  public List<AccessEntryData> getAccessControlList(String name) {
     return getAccessControlList(credentialNameDataService.findOrThrow(name));
   }
 
-  public List<AccessControlEntry> getAccessControlList(CredentialName credentialName) {
-    return createViewsForAllAcesWithName(credentialName);
+  public List<AccessEntryData> getAccessControlList(CredentialName credentialName) {
+    return accessEntryRepository.findAllByCredentialNameUuid(credentialName.getUuid());
   }
 
-  public void saveAccessControlEntries(
+  public List<AccessEntryData> saveAccessControlEntries(
       CredentialName credentialName,
       List<AccessControlEntry> entries
   ) {
@@ -46,22 +45,16 @@ public class AccessControlDataService {
       upsertAccessEntryOperations(credentialName, existingAccessEntries, ace.getActor(),
           ace.getAllowedOperations());
     }
+    return getAccessControlList(credentialName);
   }
 
-  public AccessControlEntry getAccessControlEntry(String actor, String name) {
+  public AccessEntryData getAccessControlEntry(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.findOrThrow(name);
-    AccessEntryData entry = accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-    return createViewFor(entry);
+    return accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
   }
 
-  public AccessControlEntry deleteAccessControlEntry(String actor, CredentialName credentialName) {
-    AccessEntryData entry = accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-
-    if (entry != null) {
-      accessEntryRepository.delete(entry);
-    }
-
-    return createViewFor(entry);
+  public void deleteAccessControlEntry(AccessEntryData accessEntryData) {
+    accessEntryRepository.delete(accessEntryData);
   }
 
   public boolean hasReadAclPermission(String actor, String name) {
@@ -118,24 +111,6 @@ public class AccessControlDataService {
 
     entry.enableOperations(operations);
     accessEntryRepository.saveAndFlush(entry);
-  }
-
-  private AccessControlEntry createViewFor(AccessEntryData data) {
-    if (data == null ) {
-      return null;
-    }
-    AccessControlEntry entry = new AccessControlEntry();
-    List<AccessControlOperation> operations = data.generateAccessControlOperations();
-    entry.setAllowedOperations(operations);
-    entry.setActor(data.getActor());
-    return entry;
-  }
-
-  private List<AccessControlEntry> createViewsForAllAcesWithName(CredentialName credentialName) {
-    return accessEntryRepository.findAllByCredentialNameUuid(credentialName.getUuid())
-        .stream()
-        .map(this::createViewFor)
-        .collect(Collectors.toList());
   }
 
   private AccessEntryData findAccessEntryForActor(List<AccessEntryData> accessEntries,

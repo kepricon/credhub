@@ -3,10 +3,10 @@ package io.pivotal.security.controller.v1.permissions;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
+import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.repository.CredentialNameRepository;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -71,7 +71,8 @@ public class AccessControlAuditingTest {
     mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
       .apply(springSecurity())
       .build();
-    AccessControlEntry ace = new AccessControlEntry(
+    AccessEntryData ace = new AccessEntryData(
+        CRED1,
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
         Arrays.asList(AccessControlOperation.READ_ACL));
     when(accessControlDataService.getAccessControlList(eq(CRED1)))

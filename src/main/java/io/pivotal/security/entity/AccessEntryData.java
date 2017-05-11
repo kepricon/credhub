@@ -1,8 +1,8 @@
 package io.pivotal.security.entity;
 
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
 import io.pivotal.security.request.AccessControlOperation;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "AccessEntry")

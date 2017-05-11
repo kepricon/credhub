@@ -1,21 +1,24 @@
 package io.pivotal.security.audit;
 
+import io.pivotal.security.entity.AccessEntryData;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+
+import java.util.List;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
-
-import io.pivotal.security.request.AccessControlEntry;
-import java.util.List;
 
 public class EventAuditRecordParametersFactory {
   public static List<EventAuditRecordParameters> createPermissionEventAuditRecordParameters(
       AuditingOperationCode auditingOperationCode,
       String credentialName,
-      AccessControlEntry accessControlEntry
+      AccessEntryData accessControlEntry
   ) {
     return createPermissionsEventAuditParameters(
         auditingOperationCode,
         credentialName,
-        singletonList(accessControlEntry)
+        singletonList(createViewFor(accessControlEntry))
     );
   }
 
@@ -38,5 +41,16 @@ public class EventAuditRecordParametersFactory {
               });
         });
     return eventAuditRecordParameters;
+  }
+
+  private static AccessControlEntry createViewFor(AccessEntryData data) {
+    if (data == null ) {
+      return null;
+    }
+    AccessControlEntry entry = new AccessControlEntry();
+    List<AccessControlOperation> operations = data.generateAccessControlOperations();
+    entry.setAllowedOperations(operations);
+    entry.setActor(data.getActor());
+    return entry;
   }
 }

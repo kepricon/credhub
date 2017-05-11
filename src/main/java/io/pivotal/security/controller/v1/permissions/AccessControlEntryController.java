@@ -4,8 +4,8 @@ import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +74,7 @@ public class AccessControlEntryController {
 
   ) {
     eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
-      AccessControlEntry entry = accessControlDataService.getAccessControlEntry(actor, credentialName);
+      AccessEntryData entry = accessControlDataService.getAccessControlEntry(actor, credentialName);
 
       if (entry != null) {
         parameterList.addAll(createPermissionEventAuditRecordParameters(
@@ -82,7 +82,7 @@ public class AccessControlEntryController {
             credentialName,
             entry
         ));
-        accessControlHandler.deleteAccessControlEntries(userContext, credentialName, actor);
+        accessControlHandler.deleteAccessControlEntries(userContext, entry);
       }
       return entry;
     });

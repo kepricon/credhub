@@ -1,5 +1,14 @@
 package io.pivotal.security.audit;
 
+import io.pivotal.security.entity.AccessEntryData;
+import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.request.AccessControlEntry;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import java.util.List;
+
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
@@ -10,12 +19,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-
-import io.pivotal.security.request.AccessControlEntry;
-import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class EventAuditRecordParametersFactoryTest {
@@ -45,7 +48,10 @@ public class EventAuditRecordParametersFactoryTest {
   @Test
   public void createPermissionEventAuditRecordParameters_returnsPermissionsEventsList() {
     String credentialName = "/test";
-    AccessControlEntry entry = new AccessControlEntry("actor1", asList(READ, WRITE));
+    AccessEntryData entry = new AccessEntryData(
+        new CredentialName(credentialName),
+        "actor1",
+        asList(READ, WRITE));
 
     List<EventAuditRecordParameters> permissionsEventAuditParameters = EventAuditRecordParametersFactory
         .createPermissionEventAuditRecordParameters(
