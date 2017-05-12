@@ -1,10 +1,20 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
@@ -79,15 +89,15 @@ public class CertificateGenerationParameters {
     return this;
   }
 
-  public CertificateGenerationParameters setOrganizationUnit(String organizationUnit) {
-    this.organizationUnit = organizationUnit;
-    return this;
-  }
-
-  public CertificateGenerationParameters setLocality(String locality) {
-    this.locality = locality;
-    return this;
-  }
+//  public CertificateGenerationParameters setOrganizationUnit(String organizationUnit) {
+//    this.organizationUnit = organizationUnit;
+//    return this;
+//  }
+//
+//  public CertificateGenerationParameters setLocality(String locality) {
+//    this.locality = locality;
+//    return this;
+//  }
 
   public CertificateGenerationParameters setState(String state) {
     this.state = state;
@@ -147,17 +157,9 @@ public class CertificateGenerationParameters {
     return this;
   }
 
-  public String[] getAlternativeNames() {
-    return alternativeNames;
-  }
-
   public CertificateGenerationParameters setAlternativeNames(String[] alternativeNames) {
     this.alternativeNames = alternativeNames;
     return this;
-  }
-
-  public String[] getExtendedKeyUsage() {
-    return extendedKeyUsage;
   }
 
   public CertificateGenerationParameters setExtendedKeyUsage(String[] extendedKeyUsage) {
@@ -165,8 +167,49 @@ public class CertificateGenerationParameters {
     return this;
   }
 
-  public String[] getKeyUsage() {
-    return keyUsage;
+  @JsonIgnore
+  public KeyUsage getKeyUsage() {
+    if (keyUsage == null){
+      return null;
+    }
+
+    int bitmask = 0;
+
+    for (String key : keyUsage) {
+      switch (key) {
+        case DIGITAL_SIGNATURE:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.digitalSignature;
+          break;
+        case NON_REPUDIATION:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.nonRepudiation;
+          break;
+        case KEY_ENCIPHERMENT:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.keyEncipherment;
+          break;
+        case DATA_ENCIPHERMENT:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.dataEncipherment;
+          break;
+        case KEY_AGREEMENT:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.keyAgreement;
+          break;
+        case KEY_CERT_SIGN:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.keyCertSign;
+          break;
+        case CRL_SIGN:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.cRLSign;
+          break;
+        case ENCIPHER_ONLY:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.encipherOnly;
+          break;
+        case DECIPHER_ONLY:
+          bitmask |= org.bouncycastle.asn1.x509.KeyUsage.decipherOnly;
+          break;
+        default:
+          throw new ParameterizedValidationException("error.invalid_key_usage", key);
+      }
+    }
+
+    return new KeyUsage(bitmask);
   }
 
   public CertificateGenerationParameters setKeyUsage(String[] keyUsage) {
@@ -174,28 +217,79 @@ public class CertificateGenerationParameters {
     return this;
   }
 
-  public String getOrganization() {
-    return organization;
+  @JsonIgnore
+  public X500Name getDn() {
+    X500NameBuilder builder = new X500NameBuilder();
+
+    if (!StringUtils.isEmpty(organization)) {
+      builder.addRDN(BCStyle.O, organization);
+    }
+    if (!StringUtils.isEmpty(state)) {
+      builder.addRDN(BCStyle.ST, state);
+    }
+    if (!StringUtils.isEmpty(country)) {
+      builder.addRDN(BCStyle.C, country);
+    }
+    if (!StringUtils.isEmpty(commonName)) {
+      builder.addRDN(BCStyle.CN, commonName);
+    }
+    if (!StringUtils.isEmpty(organizationUnit)) {
+      builder.addRDN(BCStyle.OU, organizationUnit);
+    }
+    if (!StringUtils.isEmpty(locality)) {
+      builder.addRDN(BCStyle.L, locality);
+    }
+
+    return builder.build();
   }
 
-  public String getState() {
-    return state;
+  @JsonIgnore
+  public GeneralNames getAlternativeNames() {
+    if (this.alternativeNames == null){
+      return null;
+    }
+
+    GeneralNamesBuilder builder = new GeneralNamesBuilder();
+
+    for (String name: this.alternativeNames) {
+      if (InetAddresses.isInetAddress(name)) {
+        builder.addName(new GeneralName(GeneralName.iPAddress, name));
+      } else  {
+        builder.addName(new GeneralName(GeneralName.dNSName, name));
+      }
+    }
+
+    return builder.build();
   }
 
-  public String getCountry() {
-    return country;
-  }
-
-  public String getCommonName() {
-    return commonName;
-  }
-
-  public String getOrganizationUnit() {
-    return organizationUnit;
-  }
-
-  public String getLocality() {
-    return locality;
+  @JsonIgnore
+  public ExtendedKeyUsage getExtendedKeyUsage() {
+    if (extendedKeyUsage == null){
+      return null;
+    }
+    KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsage.length];
+    for (int i = 0; i < extendedKeyUsage.length; i++) {
+      switch (extendedKeyUsage[i]) {
+        case SERVER_AUTH:
+          keyPurposeIds[i] = KeyPurposeId.id_kp_serverAuth;
+          break;
+        case CLIENT_AUTH:
+          keyPurposeIds[i] = KeyPurposeId.id_kp_clientAuth;
+          break;
+        case CODE_SIGNING:
+          keyPurposeIds[i] = KeyPurposeId.id_kp_codeSigning;
+          break;
+        case EMAIL_PROTECTION:
+          keyPurposeIds[i] = KeyPurposeId.id_kp_emailProtection;
+          break;
+        case TIMESTAMPING:
+          keyPurposeIds[i] = KeyPurposeId.id_kp_timeStamping;
+          break;
+        default:
+          throw new ParameterizedValidationException("error.invalid_extended_key_usage", extendedKeyUsage[i]);
+      }
+    }
+    return new ExtendedKeyUsage(keyPurposeIds);
   }
 
   public void validate() {
