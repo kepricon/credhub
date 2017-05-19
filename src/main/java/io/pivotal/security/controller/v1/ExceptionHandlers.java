@@ -14,22 +14,16 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.DefaultErrorAttributes;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.InvalidObjectException;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class ExceptionHandlers {
@@ -39,6 +33,15 @@ public class ExceptionHandlers {
   ExceptionHandlers(MessageSource messageSource) {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
+//
+//  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//  @ExceptionHandler(Exception.class)
+//  @ResponseBody
+//  public Map<String, Object> handleGeneralException(HttpServletRequest request) {
+//    RequestAttributes requestAttributes = new ServletRequestAttributes(request);
+//    return new DefaultErrorAttributes()
+//        .getErrorAttributes(requestAttributes, false);
+//  }
 
   @ExceptionHandler(EntryNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -133,15 +136,6 @@ public class ExceptionHandlers {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
     return constructError(exception.getMessage());
-  }
-
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  @ExceptionHandler(Exception.class)
-  @ResponseBody
-  public Map<String, Object> handleGeneralException(HttpServletRequest request) {
-    RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-    return new DefaultErrorAttributes()
-        .getErrorAttributes(requestAttributes, false);
   }
 
   private ResponseError badRequestResponse() {
