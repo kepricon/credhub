@@ -1,5 +1,6 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.domain.SecurityEventAuditRecord;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +14,9 @@ public class SecurityEventsLogService {
   private final String credhubVersion;
 
   @Autowired
-  SecurityEventsLogService(Logger securityEventsLogger, @Value("${info.app.version}") String credhubVersion) {
+  SecurityEventsLogService(Logger securityEventsLogger, VersionProvider versionProvider) {
     this.securityEventsLogger = securityEventsLogger;
-    this.credhubVersion = credhubVersion;
+    this.credhubVersion = versionProvider.currentVersion();
   }
 
   public void log(SecurityEventAuditRecord securityEventAuditRecord) {

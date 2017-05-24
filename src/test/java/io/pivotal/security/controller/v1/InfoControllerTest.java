@@ -1,9 +1,11 @@
 package io.pivotal.security.controller.v1;
 
+import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -26,9 +28,12 @@ public class InfoControllerTest {
   private MockMvc mockMvc;
   private InfoController infoController;
 
+  @Autowired
+  VersionProvider versionProvider;
+
   @Before
   public void beforeEach() {
-    infoController = new InfoController("https://uaa.url.example.com", "notCredHubLol");
+    infoController = new InfoController("https://uaa.url.example.com", "notCredHubLol", versionProvider);
 
     mockMvc = MockMvcBuilders
         .standaloneSetup(infoController)
