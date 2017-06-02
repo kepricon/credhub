@@ -5,14 +5,13 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.data.CredentialNameDataService;
+import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.repository.CredentialVersionRepository;
@@ -83,7 +82,7 @@ public class EncryptionKeyRotatorTest {
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
-  private CredentialNameDataService credentialNameDataService;
+  private CredentialDataService credentialDataService;
 
   @Autowired
   private EncryptionKeyRotator encryptionKeyRotator;
@@ -101,7 +100,7 @@ public class EncryptionKeyRotatorTest {
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
 
   private CertificateCredential credentialWithCurrentKey;
-  private Credential credentialWithOldKey;
+  private io.pivotal.security.domain.Credential credentialWithOldKey;
   private CertificateCredential credentialWithUnknownKey;
   private PasswordCredential password;
   private MockMvc mockMvc;
@@ -126,7 +125,7 @@ public class EncryptionKeyRotatorTest {
 
     setupInitialContext();
 
-    Slice<Credential> beforeRotation = credentialVersionDataService
+    Slice<io.pivotal.security.domain.Credential> beforeRotation = credentialVersionDataService
         .findEncryptedWithAvailableInactiveKey();
     int numberToRotate = beforeRotation.getNumberOfElements();
 
@@ -136,14 +135,14 @@ public class EncryptionKeyRotatorTest {
 
     encryptionKeyRotator.rotate();
 
-    Slice<Credential> afterRotation = credentialVersionDataService
+    Slice<io.pivotal.security.domain.Credential> afterRotation = credentialVersionDataService
         .findEncryptedWithAvailableInactiveKey();
     int numberToRotateWhenDone = afterRotation.getNumberOfElements();
 
     assertThat(numberToRotate, equalTo(2));
     assertThat(numberToRotateWhenDone, equalTo(0));
 
-    List<UUID> uuids = beforeRotation.getContent().stream().map(Credential::getUuid)
+    List<UUID> uuids = beforeRotation.getContent().stream().map(io.pivotal.security.domain.Credential::getUuid)
         .collect(Collectors.toList());
 
     // Gets updated to use current key:
@@ -199,11 +198,11 @@ public class EncryptionKeyRotatorTest {
         .getResponse().getContentAsString();
     String originalPassword = parse(content).get("value").textValue();
 
-        CredentialName credentialName = credentialNameDataService.find(passwordName);
+        Credential credential = credentialDataService.find(passwordName);
 
     final PasswordCredentialData firstEncryption =
         (PasswordCredentialData) credentialVersionRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
+            .findAllByCredentialUuid(credential.getUuid()).get(0);
 
     final byte[] firstEncryptedValue = firstEncryption.getEncryptedValue().clone();
     final byte[] firstEncryptedGenParams = firstEncryption.getEncryptedGenerationParameters()
@@ -215,7 +214,7 @@ public class EncryptionKeyRotatorTest {
 
     final PasswordCredentialData secondEncryption =
         (PasswordCredentialData) credentialVersionRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
+            .findAllByCredentialUuid(credential.getUuid()).get(0);
     assertThat(firstEncryptedValue,
         not(equalTo(secondEncryption.getEncryptedValue())));
     assertThat(firstEncryptedGenParams,
@@ -248,11 +247,11 @@ public class EncryptionKeyRotatorTest {
         .getResponse().getContentAsString();
     String originalCert = parse(content).get("value").get("private_key").textValue();
 
-        CredentialName credentialName = credentialNameDataService.find(certificateName);
+        Credential credential = credentialDataService.find(certificateName);
 
     final byte[] firstEncryption =
         credentialVersionRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0).getEncryptedValue()
+            .findAllByCredentialUuid(credential.getUuid()).get(0).getEncryptedValue()
             .clone();
 
     setActiveKey(1);
@@ -261,7 +260,7 @@ public class EncryptionKeyRotatorTest {
 
     final CertificateCredentialData secondEncryption =
         (CertificateCredentialData) credentialVersionRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
+            .findAllByCredentialUuid(credential.getUuid()).get(0);
     assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValue())));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + certificateName)

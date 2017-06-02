@@ -2,8 +2,8 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.data.CredentialNameDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
@@ -18,28 +18,28 @@ import java.util.List;
 public class PermissionsHandler {
   private final PermissionService permissionService;
   private final PermissionsDataService permissionsDataService;
-  private final CredentialNameDataService credentialNameDataService;
+  private final CredentialDataService credentialDataService;
 
   @Autowired
   PermissionsHandler(
       PermissionService permissionService,
       PermissionsDataService permissionsDataService,
-      CredentialNameDataService credentialNameDataService
+      CredentialDataService credentialDataService
   ) {
     this.permissionService = permissionService;
     this.permissionsDataService = permissionsDataService;
-    this.credentialNameDataService = credentialNameDataService;
+    this.credentialDataService = credentialDataService;
   }
 
   public PermissionsView getPermissions(UserContext userContext, String name) {
     try {
-      final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
+      final Credential credential = credentialDataService.findOrThrow(name);
 
       permissionService.verifyAclReadPermission(userContext, name);
 
       return new PermissionsView(
-          credentialName.getName(),
-          permissionsDataService.getAccessControlList(credentialName)
+          credential.getName(),
+          permissionsDataService.getAccessControlList(credential)
       );
     } catch (PermissionException pe){
       // lack of permissions should be indistinguishable from not found.
@@ -48,17 +48,17 @@ public class PermissionsHandler {
   }
 
   public PermissionsView setPermissions(UserContext userContext, String name, List<PermissionEntry> permissionEntryList) {
-    final CredentialName credentialName = credentialNameDataService.find(name);
+    final Credential credential = credentialDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
-    if (credentialName == null || !permissionService.hasAclWritePermission(userContext, name)) {
+    if (credential == null || !permissionService.hasAclWritePermission(userContext, name)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
     permissionsDataService
-        .saveAccessControlEntries(credentialName, permissionEntryList);
+        .saveAccessControlEntries(credential, permissionEntryList);
 
-    return new PermissionsView(credentialName.getName(), permissionsDataService.getAccessControlList(credentialName));
+    return new PermissionsView(credential.getName(), permissionsDataService.getAccessControlList(credential));
   }
 
   public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {

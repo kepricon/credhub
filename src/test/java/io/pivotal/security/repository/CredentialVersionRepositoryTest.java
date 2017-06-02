@@ -2,7 +2,7 @@ package io.pivotal.security.repository;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -31,7 +31,7 @@ public class CredentialVersionRepositoryTest {
   CredentialVersionRepository subject;
 
   @Autowired
-  CredentialNameRepository credentialNameRepository;
+  CredentialRepository credentialRepository;
 
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -54,9 +54,9 @@ public class CredentialVersionRepositoryTest {
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
       CertificateCredentialData entity = new CertificateCredentialData();
-      CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
+      Credential credential = credentialRepository.save(new Credential(name));
       final String longString = stringBuilder.toString();
-      entity.setCredentialName(credentialName);
+      entity.setCredential(credential);
       entity.setCa(longString);
       entity.setCertificate(longString);
       entity.setEncryptedValue(encryptedValue);
@@ -64,7 +64,7 @@ public class CredentialVersionRepositoryTest {
 
       subject.save(entity);
       CertificateCredentialData credentialData = (CertificateCredentialData) subject
-          .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid());
+          .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
       assertThat(credentialData.getCa().length(), equalTo(7000));
       assertThat(credentialData.getCertificate().length(), equalTo(7000));
       assertThat(credentialData.getEncryptedValue(), equalTo(encryptedValue));
@@ -78,13 +78,13 @@ public class CredentialVersionRepositoryTest {
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
       ValueCredentialData entity = new ValueCredentialData();
-      CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
-      entity.setCredentialName(credentialName);
+      Credential credential = credentialRepository.save(new Credential(name));
+      entity.setCredential(credential);
       entity.setEncryptedValue(encryptedValue);
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      assertThat(subject.findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
+      assertThat(subject.findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
           .getEncryptedValue().length, equalTo(7016));
     });
   }

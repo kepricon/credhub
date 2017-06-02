@@ -2,13 +2,12 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.entity.CertificateCredentialData;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.CredentialVersionData;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
@@ -67,7 +66,7 @@ public class CredentialVersionDataServiceTest {
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @Autowired
-  CredentialNameDataService credentialNameDataService;
+  CredentialDataService credentialDataService;
 
   @SpyBean
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -101,7 +100,7 @@ public class CredentialVersionDataServiceTest {
     passwordCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     passwordCredentialData.setEncryptedValue("credential-password".getBytes());
     PasswordCredential credential = new PasswordCredential(passwordCredentialData);
-    Credential savedCredential = subject.save(credential);
+    io.pivotal.security.domain.Credential savedCredential = subject.save(credential);
 
     assertNotNull(savedCredential);
 
@@ -111,7 +110,7 @@ public class CredentialVersionDataServiceTest {
     assertThat(savedPasswordCredential.getName(), equalTo(credential.getName()));
     assertThat(savedPasswordCredential.getUuid(), equalTo(credential.getUuid()));
 
-    assertThat(credentialVersionData.getCredentialName().getName(), equalTo("/my-credential"));
+    assertThat(credentialVersionData.getCredential().getName(), equalTo("/my-credential"));
     assertThat(credentialVersionData.getEncryptedValue(), equalTo("credential-password".getBytes()));
   }
 
@@ -131,7 +130,7 @@ public class CredentialVersionDataServiceTest {
     PasswordCredential savedPasswordCredential = (PasswordCredential) subject.findMostRecent("/my-credential-2");
     CredentialVersionData credentialVersionData = credentialVersionRepository.findOneByUuid(savedPasswordCredential.getUuid());
 
-    assertThat(credentialVersionData.getCredentialName().getName(), equalTo("/my-credential-2"));
+    assertThat(credentialVersionData.getCredential().getName(), equalTo("/my-credential-2"));
     assertThat(credentialVersionData.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
     assertThat(credentialVersionData.getUuid(), equalTo(credential.getUuid()));
   }
@@ -157,7 +156,7 @@ public class CredentialVersionDataServiceTest {
 
     subject.save(credentialWithLeadingSlash);
 
-    Credential savedCredential = subject.findMostRecent("/my/credential");
+    io.pivotal.security.domain.Credential savedCredential = subject.findMostRecent("/my/credential");
     assertThat(savedCredential.getCredentialName().getName(), equalTo("/my/credential"));
   }
 
@@ -172,23 +171,23 @@ public class CredentialVersionDataServiceTest {
 
   @Test
   public void delete_onAnExistingCredential_returnsTrue() {
-    credentialNameDataService.save(new CredentialName("/my-credential"));
+    credentialDataService.save(new Credential("/my-credential"));
 
     assertThat(subject.delete("/my-credential"), equalTo(true));
   }
 
   @Test
   public void delete_onACredentialName_deletesAllCredentialsWithTheName() {
-    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-credential"));
+    Credential credential = credentialDataService.save(new Credential("/my-credential"));
 
     PasswordCredentialData credentialData = new PasswordCredentialData();
-    credentialData.setCredentialName(credentialName);
+    credentialData.setCredential(credential);
     credentialData.setEncryptionKeyUuid(activeCanaryUuid);
     credentialData.setEncryptedValue("credential-password".getBytes());
     subject.save(credentialData);
 
     credentialData = new PasswordCredentialData("/my-credential");
-    credentialData.setCredentialName(credentialName);
+    credentialData.setCredential(credential);
     credentialData.setEncryptionKeyUuid(activeCanaryUuid);
     credentialData.setEncryptedValue("another password".getBytes());
     subject.save(credentialData);
@@ -198,21 +197,21 @@ public class CredentialVersionDataServiceTest {
     subject.delete("/my-credential");
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(0));
-    assertNull(credentialNameDataService.find("/my-credential"));
+    assertNull(credentialDataService.find("/my-credential"));
   }
 
   @Test
   public void delete_givenACredentialNameCasedDifferentlyFromTheActual_shouldBeCaseInsensitive() {
-    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-credential"));
+    Credential credentialName = credentialDataService.save(new Credential("/my-credential"));
 
     PasswordCredentialData credential = new PasswordCredentialData();
-    credential.setCredentialName(credentialName);
+    credential.setCredential(credentialName);
     credential.setEncryptionKeyUuid(activeCanaryUuid);
     credential.setEncryptedValue("credential-password".getBytes());
     subject.save(credential);
 
     credential = new PasswordCredentialData();
-    credential.setCredentialName(credentialName);
+    credential.setCredential(credentialName);
     credential.setEncryptionKeyUuid(activeCanaryUuid);
     credential.setEncryptedValue("another password".getBytes());
 
@@ -245,7 +244,7 @@ public class CredentialVersionDataServiceTest {
 
   @Test
   public void findMostRecent_givenACredentialNameWithoutVersions_returnsNull() {
-    credentialNameDataService.save(new CredentialName("/my-unused-CREDENTIAL"));
+    credentialDataService.save(new Credential("/my-unused-CREDENTIAL"));
 
     assertNull(subject.findMostRecent("/my-unused-CREDENTIAL"));
   }
@@ -432,7 +431,7 @@ public class CredentialVersionDataServiceTest {
     PasswordCredential credential2 = savePassword(4000000000123L, "/seCret1");
     savePassword(3000000000123L, "/Secret2");
 
-    List<Credential> credentials = subject.findAllByName("/Secret1");
+    List<io.pivotal.security.domain.Credential> credentials = subject.findAllByName("/Secret1");
     assertThat(credentials, containsInAnyOrder(hasProperty("uuid", equalTo(credential1.getUuid())),
         hasProperty("uuid", equalTo(credential2.getUuid()))));
 
@@ -465,7 +464,7 @@ public class CredentialVersionDataServiceTest {
     PasswordCredential credentialEncryptedWithUnknownKey = savePassword(4000000000123L,
         "ANOTHER", unknownCanaryUuid);
 
-    final Slice<Credential> credentials = subject.findEncryptedWithAvailableInactiveKey();
+    final Slice<io.pivotal.security.domain.Credential> credentials = subject.findEncryptedWithAvailableInactiveKey();
     List<UUID> credentialUuids = credentials.getContent().stream().map(credential -> credential.getUuid())
         .collect(Collectors.toList());
 
@@ -482,12 +481,12 @@ public class CredentialVersionDataServiceTest {
 
   private PasswordCredential savePassword(long timeMillis, String name, UUID canaryUuid) {
     fakeTimeSetter.accept(timeMillis);
-    CredentialName credentialName = credentialNameDataService.find(name);
-    if (credentialName == null) {
-      credentialName = credentialNameDataService.save(new CredentialName(name));
+    Credential credential = credentialDataService.find(name);
+    if (credential == null) {
+      credential = credentialDataService.save(new Credential(name));
     }
     PasswordCredentialData credentialObject = new PasswordCredentialData();
-    credentialObject.setCredentialName(credentialName);
+    credentialObject.setCredential(credential);
     credentialObject.setEncryptionKeyUuid(canaryUuid);
     return subject.save(credentialObject);
   }
@@ -498,15 +497,15 @@ public class CredentialVersionDataServiceTest {
 
 
   private void setupTestFixtureForFindMostRecent() {
-    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-CREDENTIAL"));
+    Credential credential = credentialDataService.save(new Credential("/my-CREDENTIAL"));
 
     namedPasswordCredential1 = new PasswordCredentialData();
-    namedPasswordCredential1.setCredentialName(credentialName);
+    namedPasswordCredential1.setCredential(credential);
     namedPasswordCredential1.setEncryptionKeyUuid(activeCanaryUuid);
     namedPasswordCredential1.setEncryptedValue("/my-old-password".getBytes());
 
     passwordCredential2 = new PasswordCredentialData();
-    passwordCredential2.setCredentialName(credentialName);
+    passwordCredential2.setCredential(credential);
     passwordCredential2.setEncryptionKeyUuid(activeCanaryUuid);
     passwordCredential2.setEncryptedValue("/my-new-password".getBytes());
 

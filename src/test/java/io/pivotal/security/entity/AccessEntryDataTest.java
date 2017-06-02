@@ -15,7 +15,7 @@ public class AccessEntryDataTest {
   {
     describe("#getActor", () -> {
       it("should return the name of the actor", () -> {
-        assertThat(new AccessEntryData(new CredentialName("test/name"), "ryan_gosling",
+        assertThat(new AccessEntryData(new Credential("test/name"), "ryan_gosling",
             new ArrayList<>()).getActor(), equalTo("ryan_gosling"));
       });
     });

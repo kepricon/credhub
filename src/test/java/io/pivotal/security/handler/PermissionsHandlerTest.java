@@ -2,8 +2,8 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.data.CredentialNameDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
@@ -40,32 +40,32 @@ public class PermissionsHandlerTest {
 
   private PermissionService permissionService;
   private PermissionsDataService permissionsDataService;
-  private CredentialNameDataService credentialNameDataService;
+  private CredentialDataService credentialDataService;
 
-  private final CredentialName credentialName = new CredentialName(CREDENTIAL_NAME);
+  private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final UserContext userContext = mock(UserContext.class);
 
   @Before
   public void beforeEach() {
     permissionService = mock(PermissionService.class);
     permissionsDataService = mock(PermissionsDataService.class);
-    credentialNameDataService = mock(CredentialNameDataService.class);
+    credentialDataService = mock(CredentialDataService.class);
     subject = new PermissionsHandler(
         permissionService,
         permissionsDataService,
-        credentialNameDataService
+        credentialDataService
     );
 
-    when(credentialNameDataService.findOrThrow(any(String.class))).thenReturn(credentialName);
+    when(credentialDataService.findOrThrow(any(String.class))).thenReturn(credential);
   }
 
   @Test
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
-    when(permissionsDataService.getAccessControlList(any(CredentialName.class)))
+    when(permissionsDataService.getAccessControlList(any(Credential.class)))
         .thenReturn(accessControlList);
-    when(credentialNameDataService.findOrThrow(any(String.class)))
-        .thenReturn(new CredentialName(CREDENTIAL_NAME));
+    when(credentialDataService.findOrThrow(any(String.class)))
+        .thenReturn(new Credential(CREDENTIAL_NAME));
 
     PermissionsView response = subject.getPermissions(
         null,
@@ -85,7 +85,7 @@ public class PermissionsHandlerTest {
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
-    when(permissionsDataService.getAccessControlList(credentialName))
+    when(permissionsDataService.getAccessControlList(credential))
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
@@ -130,11 +130,11 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
 
-    when(permissionsDataService.getAccessControlList(credentialName))
+    when(permissionsDataService.getAccessControlList(credential))
         .thenReturn(expectedControlList);
 
-    when(credentialNameDataService.find(CREDENTIAL_NAME))
-        .thenReturn(credentialName);
+    when(credentialDataService.find(CREDENTIAL_NAME))
+        .thenReturn(credential);
 
     PermissionsView response = subject.setPermissions(userContext, CREDENTIAL_NAME, accessControlList);
 
@@ -173,7 +173,7 @@ public class PermissionsHandlerTest {
   public void setPermissions_whenTheCredentialDoesNotExist_throwsException() {
     when(permissionService.hasAclWritePermission(any(), any()))
         .thenReturn(true);
-    when(credentialNameDataService.find(CREDENTIAL_NAME))
+    when(credentialDataService.find(CREDENTIAL_NAME))
         .thenReturn(null);
 
     try {

@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
 import javax.persistence.Column;
@@ -8,11 +8,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
-@Table(name = "CredentialName")
-public class CredentialName {
+@Table(name = "Credential")
+public class Credential {
 
   @Id
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
@@ -25,11 +26,11 @@ public class CredentialName {
 
   // Needed for hibernate
   @SuppressWarnings("unused")
-  CredentialName() {
+  Credential() {
     this(null);
   }
 
-  public CredentialName(String name) {
+  public Credential(String name) {
     setName(name);
   }
 

@@ -8,7 +8,7 @@ import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.CredentialNameRepository;
+import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.After;
@@ -71,7 +71,7 @@ public class EventAuditLogServiceTest {
   private CurrentTimeProvider currentTimeProvider;
 
   @Autowired
-  private CredentialNameRepository credentialNameRepository;
+  private CredentialRepository credentialRepository;
 
   private final Instant now = Instant.ofEpochSecond(1490903353L);
   private final Instant then = Instant.ofEpochSecond(1550903353L);
@@ -89,7 +89,7 @@ public class EventAuditLogServiceTest {
   // `@Transactional` for the tests messes with our rollback testing.
   @After
   public void afterEach() {
-    credentialNameRepository.deleteAllInBatch();
+    credentialRepository.deleteAllInBatch();
     eventAuditRecordRepository.deleteAllInBatch();
   }
 
