@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.PasswordCredential;
@@ -58,7 +58,7 @@ public class AuthConfigurationTest {
   WebApplicationContext applicationContext;
 
   @MockBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   PermissionsDataService permissionsDataService;
@@ -88,7 +88,7 @@ public class AuthConfigurationTest {
 
     describe("/api/v1/data", () -> {
       beforeEach(() -> {
-        when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
+        when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
           PasswordCredential passwordCredential = invocation
               .getArgumentAt(0, PasswordCredential.class);
           passwordCredential.setUuid(UUID.randomUUID());

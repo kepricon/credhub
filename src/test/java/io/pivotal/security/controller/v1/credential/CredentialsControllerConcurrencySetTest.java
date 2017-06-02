@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1.credential;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
@@ -50,7 +50,7 @@ public class CredentialsControllerConcurrencySetTest {
   CredentialsController subject;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   private Encryptor encryptor;
@@ -143,10 +143,10 @@ public class CredentialsControllerConcurrencySetTest {
 
           doReturn(null)
               .doReturn(valueCredential)
-              .when(credentialDataService).findMostRecent(anyString());
+              .when(credentialVersionDataService).findMostRecent(anyString());
 
           doThrow(new DataIntegrityViolationException("we already have one of those"))
-              .when(credentialDataService).save(any(Credential.class));
+              .when(credentialVersionDataService).save(any(Credential.class));
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -162,7 +162,7 @@ public class CredentialsControllerConcurrencySetTest {
         });
 
         it("retries and finds the value written by the other thread", () -> {
-          verify(credentialDataService).save(any(Credential.class));
+          verify(credentialVersionDataService).save(any(Credential.class));
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("value"))

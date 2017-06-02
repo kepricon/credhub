@@ -14,7 +14,7 @@ import javax.persistence.SecondaryTable;
     name = CertificateCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class CertificateCredentialData extends CredentialData<CertificateCredentialData> {
+public class CertificateCredentialData extends CredentialVersionData<CertificateCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "certificate";
   static final String TABLE_NAME = "CertificateCredential";

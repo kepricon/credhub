@@ -3,7 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
@@ -32,16 +32,16 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 @Service
 public class RegenerateService {
 
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
   private Map<String, Supplier<Regeneratable>> regeneratableTypes;
   private CredentialService credentialService;
   private GeneratorService generatorService;
 
   RegenerateService(
-      CredentialDataService credentialDataService,
+      CredentialVersionDataService credentialVersionDataService,
       CredentialService credentialService,
       GeneratorService generatorService) {
-    this.credentialDataService = credentialDataService;
+    this.credentialVersionDataService = credentialVersionDataService;
     this.credentialService = credentialService;
     this.generatorService = generatorService;
 
@@ -57,7 +57,7 @@ public class RegenerateService {
       List<EventAuditRecordParameters> parametersList,
       CredentialRegenerateRequest requestBody,
       PermissionEntry currentUserPermissionEntry) {
-    Credential credential = credentialDataService.findMostRecent(requestBody.getName());
+    Credential credential = credentialVersionDataService.findMostRecent(requestBody.getName());
     if (credential == null) {
       parametersList.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, requestBody.getName()));
       throw new EntryNotFoundException("error.credential_not_found");

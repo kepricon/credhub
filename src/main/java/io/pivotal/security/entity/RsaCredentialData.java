@@ -13,7 +13,7 @@ import javax.persistence.SecondaryTable;
     name = RsaCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class RsaCredentialData extends CredentialData<RsaCredentialData> {
+public class RsaCredentialData extends CredentialVersionData<RsaCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "rsa";
   static final String TABLE_NAME = "RsaCredential";

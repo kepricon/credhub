@@ -2,9 +2,9 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
-import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.repository.CredentialRepository;
+import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.FindCredentialResult;
 import org.apache.commons.lang3.StringUtils;
@@ -23,38 +23,38 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.CredentialRepository.BATCH_SIZE;
+import static io.pivotal.security.repository.CredentialVersionRepository.BATCH_SIZE;
 
 @Service
-public class CredentialDataService {
+public class CredentialVersionDataService {
 
-  private final CredentialRepository credentialRepository;
+  private final CredentialVersionRepository credentialVersionRepository;
   private final CredentialNameDataService credentialNameDataService;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final CredentialFactory credentialFactory;
   private final String findMatchingNameQuery =
-      " select name.name, credential.version_created_at from ("
+      " select name.name, credential_version.version_created_at from ("
           + "   select"
           + "     max(version_created_at) as version_created_at,"
           + "     credential_name_uuid"
-          + "   from credential group by credential_name_uuid"
-          + " ) as credential inner join ("
+          + "   from credential_version group by credential_name_uuid"
+          + " ) as credential_version inner join ("
           + "   select * from credential_name"
           + "     where lower(name) like lower(?)"
           + " ) as name"
-          + " on credential.credential_name_uuid = name.uuid"
+          + " on credential_version.credential_name_uuid = name.uuid"
           + " order by version_created_at desc";
 
   @Autowired
-  protected CredentialDataService(
-      CredentialRepository credentialRepository,
+  protected CredentialVersionDataService(
+      CredentialVersionRepository credentialVersionRepository,
       CredentialNameDataService credentialNameDataService,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
       CredentialFactory credentialFactory
   ) {
-    this.credentialRepository = credentialRepository;
+    this.credentialVersionRepository = credentialVersionRepository;
     this.credentialNameDataService = credentialNameDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
@@ -65,25 +65,25 @@ public class CredentialDataService {
     return (Z) namedSecret.save(this);
   }
 
-  public <Z extends Credential> Z save(CredentialData credentialData) {
-    if (credentialData.getEncryptionKeyUuid() == null) {
-      credentialData.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+  public <Z extends Credential> Z save(CredentialVersionData credentialVersionData) {
+    if (credentialVersionData.getEncryptionKeyUuid() == null) {
+      credentialVersionData.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
 
-    CredentialName credentialName = credentialData.getCredentialName();
+    CredentialName credentialName = credentialVersionData.getCredentialName();
 
     if (credentialName.getUuid() == null) {
-      credentialData.setCredentialName(credentialNameDataService.save(credentialName));
+      credentialVersionData.setCredentialName(credentialNameDataService.save(credentialName));
     }
 
-    return (Z) credentialFactory.makeCredentialFromEntity(credentialRepository.saveAndFlush(credentialData));
+    return (Z) credentialFactory.makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData));
   }
 
   public List<String> findAllPaths() {
     return credentialNameDataService.findAll()
         .stream()
         .map(CredentialName::getName)
-        .flatMap(CredentialDataService::fullHierarchyForPath)
+        .flatMap(CredentialVersionDataService::fullHierarchyForPath)
         .distinct()
         .sorted()
         .collect(Collectors.toList());
@@ -111,13 +111,13 @@ public class CredentialDataService {
     if (credentialName == null) {
       return null;
     } else {
-      return credentialFactory.makeCredentialFromEntity(credentialRepository
+      return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
           .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()));
     }
   }
 
   public Credential findByUuid(String uuid) {
-    return credentialFactory.makeCredentialFromEntity(credentialRepository.findOneByUuid(UUID.fromString(uuid)));
+    return credentialFactory.makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(UUID.fromString(uuid)));
   }
 
   public List<FindCredentialResult> findContainingName(String name) {
@@ -138,26 +138,26 @@ public class CredentialDataService {
   public List<Credential> findAllByName(String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
 
-    return credentialName != null ? credentialFactory.makeCredentialsFromEntities(credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
+    return credentialName != null ? credentialFactory.makeCredentialsFromEntities(credentialVersionRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
         : newArrayList();
   }
 
   public Long count() {
-    return credentialRepository.count();
+    return credentialVersionRepository.count();
   }
 
   public Long countAllNotEncryptedByActiveKey() {
-    return credentialRepository.countByEncryptionKeyUuidNot(
+    return credentialVersionRepository.countByEncryptionKeyUuidNot(
         encryptionKeyCanaryMapper.getActiveUuid()
     );
   }
 
   public Long countEncryptedWithKeyUuidIn(List<UUID> uuids) {
-    return credentialRepository.countByEncryptionKeyUuidIn(uuids);
+    return credentialVersionRepository.countByEncryptionKeyUuidIn(uuids);
   }
 
   public Slice<Credential> findEncryptedWithAvailableInactiveKey() {
-    final Slice<CredentialData> credentialDataSlice = credentialRepository.findByEncryptionKeyUuidIn(
+    final Slice<CredentialVersionData> credentialDataSlice = credentialVersionRepository.findByEncryptionKeyUuidIn(
         encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
         new PageRequest(0, BATCH_SIZE)
     );

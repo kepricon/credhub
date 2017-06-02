@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.credential;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -45,7 +45,7 @@ public class CredentialsControllerDeleteTest {
   WebApplicationContext webApplicationContext;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
@@ -118,9 +118,9 @@ public class CredentialsControllerDeleteTest {
 
       describe("when there is one credential with the name (case-insensitive)", () -> {
         beforeEach(() -> {
-          doReturn(true).when(credentialDataService).delete(credentialName.toUpperCase());
+          doReturn(true).when(credentialVersionDataService).delete(credentialName.toUpperCase());
           doReturn(new ValueCredential())
-              .when(credentialDataService)
+              .when(credentialVersionDataService)
               .findMostRecent(credentialName.toUpperCase());
           response = mockMvc.perform(delete("/api/v1/data?name=" + credentialName.toUpperCase())
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -132,7 +132,7 @@ public class CredentialsControllerDeleteTest {
         });
 
         it("asks data service to remove it from storage", () -> {
-          verify(credentialDataService, times(1)).delete(credentialName.toUpperCase());
+          verify(credentialVersionDataService, times(1)).delete(credentialName.toUpperCase());
         });
 
         it("persists an audit entry", () -> {
@@ -142,8 +142,8 @@ public class CredentialsControllerDeleteTest {
 
       describe("when there are multiple credentials with that name", () -> {
         beforeEach(() -> {
-          doReturn(true).when(credentialDataService).delete(credentialName);
-          doReturn(new ValueCredential()).when(credentialDataService).findMostRecent(credentialName);
+          doReturn(true).when(credentialVersionDataService).delete(credentialName);
+          doReturn(new ValueCredential()).when(credentialVersionDataService).findMostRecent(credentialName);
 
           response = mockMvc.perform(delete("/api/v1/data?name=" + credentialName)
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -155,7 +155,7 @@ public class CredentialsControllerDeleteTest {
         });
 
         it("should remove them all from the database", () -> {
-          verify(credentialDataService, times(1)).delete(credentialName);
+          verify(credentialVersionDataService, times(1)).delete(credentialName);
         });
 
         it("persists a single audit entry", () -> {
@@ -165,9 +165,9 @@ public class CredentialsControllerDeleteTest {
 
       describe("name can come as a request parameter", () -> {
         beforeEach(() -> {
-          doReturn(true).when(credentialDataService).delete(credentialName.toUpperCase());
+          doReturn(true).when(credentialVersionDataService).delete(credentialName.toUpperCase());
           doReturn(new ValueCredential())
-              .when(credentialDataService)
+              .when(credentialVersionDataService)
               .findMostRecent(credentialName.toUpperCase());
         });
 
@@ -176,7 +176,7 @@ public class CredentialsControllerDeleteTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isNoContent());
 
-          verify(credentialDataService, times(1)).delete(credentialName.toUpperCase());
+          verify(credentialVersionDataService, times(1)).delete(credentialName.toUpperCase());
         });
 
         it("handles missing name parameter", () -> {

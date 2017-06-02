@@ -12,7 +12,7 @@ import javax.persistence.SecondaryTable;
     name = UserCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class UserCredentialData extends CredentialData<UserCredentialData> {
+public class UserCredentialData extends CredentialVersionData<UserCredentialData> {
   public static final String TABLE_NAME = "UserCredential";
   public static final String CREDENTIAL_TYPE = "user";
 

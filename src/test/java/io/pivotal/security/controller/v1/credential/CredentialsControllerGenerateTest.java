@@ -25,7 +25,7 @@ import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
@@ -69,7 +69,7 @@ public class CredentialsControllerGenerateTest {
   WebApplicationContext webApplicationContext;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @SpyBean
   GenerateRequestHandler generateRequestHandler;
@@ -203,16 +203,16 @@ public class CredentialsControllerGenerateTest {
           expectCredential.setEncryptor(encryptor);
           expectCredential.setPasswordAndGenerationParameters(fakePassword, null);
 
-          Mockito.reset(credentialDataService);
+          Mockito.reset(credentialVersionDataService);
 
           doReturn(null)
           .doReturn(expectCredential
               .setUuid(uuid)
               .setVersionCreatedAt(frozenTime.minusSeconds(1))
-          ).when(credentialDataService).findMostRecent(anyString());
+          ).when(credentialVersionDataService).findMostRecent(anyString());
 
           doThrow(new DataIntegrityViolationException("we already have one of those"))
-              .when(credentialDataService).save(any(Credential.class));
+              .when(credentialVersionDataService).save(any(Credential.class));
 
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -224,7 +224,7 @@ public class CredentialsControllerGenerateTest {
         });
 
         it("retries and finds the value written by the other thread", () -> {
-          verify(credentialDataService).save(any(Credential.class));
+          verify(credentialVersionDataService).save(any(Credential.class));
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("password"))

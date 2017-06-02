@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.credential;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.domain.Credential;
@@ -69,7 +69,7 @@ public class CredentialsControllerAuditLogTest {
   RequestAuditRecordDataService requestAuditRecordDataService;
 
   @MockBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   PermissionsDataService permissionsDataService;
@@ -92,7 +92,7 @@ public class CredentialsControllerAuditLogTest {
       describe("by name", () -> {
         it("makes a credential_access audit log entry", () -> {
           doReturn(Arrays.asList(new PasswordCredential("/foo").setEncryptor(encryptor)))
-              .when(credentialDataService).findAllByName(eq("foo"));
+              .when(credentialVersionDataService).findAllByName(eq("foo"));
 
           mockMvc.perform(get(API_V1_DATA + "?name=foo")
               .accept(MediaType.APPLICATION_JSON)
@@ -114,7 +114,7 @@ public class CredentialsControllerAuditLogTest {
       describe("by id", () -> {
         it("makes a credential_access audit log entry", () -> {
           doReturn(new PasswordCredential("/foo").setEncryptor(encryptor))
-              .when(credentialDataService).findByUuid(eq("foo-id"));
+              .when(credentialVersionDataService).findByUuid(eq("foo-id"));
 
           mockMvc.perform(get(API_V1_DATA + "/foo-id")
               .accept(MediaType.APPLICATION_JSON)
@@ -136,7 +136,7 @@ public class CredentialsControllerAuditLogTest {
 
     describe("when a request to set credential is served", () -> {
       beforeEach(() -> {
-        when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
+        when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
           ValueCredential valueCredential = invocation.getArgumentAt(0, ValueCredential.class);
           valueCredential.setEncryptor(encryptor);
           valueCredential.setUuid(UUID.randomUUID());
@@ -172,7 +172,7 @@ public class CredentialsControllerAuditLogTest {
 
     describe("when a request to generate a credential is served", () -> {
       beforeEach(() -> {
-        when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
+        when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
           PasswordCredential passwordCredential = invocation
               .getArgumentAt(0, PasswordCredential.class);
           passwordCredential.setUuid(UUID.randomUUID());
@@ -253,7 +253,7 @@ public class CredentialsControllerAuditLogTest {
 
     describe("when a request has multiple X-Forwarded-For headers set", () -> {
       beforeEach(() -> {
-        when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
+        when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
           ValueCredential valueCredential = invocation.getArgumentAt(0, ValueCredential.class);
           valueCredential.setUuid(UUID.randomUUID());
           return valueCredential;

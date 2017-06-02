@@ -10,7 +10,7 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
     name = PasswordCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class PasswordCredentialData extends CredentialData<PasswordCredentialData> {
+public class PasswordCredentialData extends CredentialVersionData<PasswordCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "password";
   static final String TABLE_NAME = "PasswordSecret";

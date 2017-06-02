@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.SshCredential;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class EncryptionKeyRotatorTest {
 
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   private CertificateCredential certificateCredential;
   private PasswordCredential passwordCredential;
@@ -28,18 +28,18 @@ public class EncryptionKeyRotatorTest {
 
   {
     beforeEach(() -> {
-      credentialDataService = mock(CredentialDataService.class);
+      credentialVersionDataService = mock(CredentialVersionDataService.class);
 
       certificateCredential = mock(CertificateCredential.class);
       passwordCredential = mock(PasswordCredential.class);
       sshCredential = mock(SshCredential.class);
 
-      when(credentialDataService.findEncryptedWithAvailableInactiveKey())
+      when(credentialVersionDataService.findEncryptedWithAvailableInactiveKey())
           .thenReturn(new SliceImpl<>(asList(certificateCredential, passwordCredential)))
           .thenReturn(new SliceImpl<>(asList(sshCredential)))
           .thenReturn(new SliceImpl<>(new ArrayList<>()));
 
-      final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(credentialDataService);
+      final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(credentialVersionDataService);
 
       encryptionKeyRotator.rotate();
     });
@@ -52,9 +52,9 @@ public class EncryptionKeyRotatorTest {
         });
 
     it("should save all the credentials, CAs that were rotated", () -> {
-      verify(credentialDataService).save(certificateCredential);
-      verify(credentialDataService).save(passwordCredential);
-      verify(credentialDataService).save(sshCredential);
+      verify(credentialVersionDataService).save(certificateCredential);
+      verify(credentialVersionDataService).save(passwordCredential);
+      verify(credentialVersionDataService).save(sshCredential);
     });
   }
 }

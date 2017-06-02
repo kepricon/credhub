@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 
 @Entity
 @DiscriminatorValue(ValueCredentialData.CREDENTIAL_TYPE)
-public class ValueCredentialData extends CredentialData<ValueCredentialData> {
+public class ValueCredentialData extends CredentialVersionData<ValueCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "value";
 

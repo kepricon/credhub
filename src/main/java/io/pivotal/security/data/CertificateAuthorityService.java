@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class CertificateAuthorityService {
 
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
-  public CertificateAuthorityService(CredentialDataService credentialDataService) {
-    this.credentialDataService = credentialDataService;
+  public CertificateAuthorityService(CredentialVersionDataService credentialVersionDataService) {
+    this.credentialVersionDataService = credentialVersionDataService;
   }
 
   public CertificateCredentialValue findMostRecent(String caName) throws ParameterizedValidationException {
-    Credential mostRecent = credentialDataService.findMostRecent(caName);
+    Credential mostRecent = credentialVersionDataService.findMostRecent(caName);
     if (CertificateCredential.class.isInstance(mostRecent)) {
       CertificateCredential certificateCredential = (CertificateCredential) mostRecent;
 

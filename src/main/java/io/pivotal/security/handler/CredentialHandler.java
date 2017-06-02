@@ -3,7 +3,7 @@ package io.pivotal.security.handler;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.service.PermissionService;
@@ -19,12 +19,12 @@ import static java.util.Collections.singletonList;
 
 @Component
 public class CredentialHandler {
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
   private final PermissionService permissionService;
 
   @Autowired
-  public CredentialHandler(CredentialDataService credentialDataService, PermissionService permissionService) {
-    this.credentialDataService = credentialDataService;
+  public CredentialHandler(CredentialVersionDataService credentialVersionDataService, PermissionService permissionService) {
+    this.credentialVersionDataService = credentialVersionDataService;
     this.permissionService = permissionService;
   }
 
@@ -33,7 +33,7 @@ public class CredentialHandler {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    boolean deleteSucceeded = credentialDataService.delete(credentialName);
+    boolean deleteSucceeded = credentialVersionDataService.delete(credentialName);
 
     if (!deleteSucceeded) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
@@ -48,7 +48,7 @@ public class CredentialHandler {
     auditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
     auditRecordParameters.setCredentialName(credentialName);
 
-    List<Credential> credentials = credentialDataService.findAllByName(credentialName);
+    List<Credential> credentials = credentialVersionDataService.findAllByName(credentialName);
 
     // We need this extra check in case permissions aren't being enforced.
     if (credentials.isEmpty() || !permissionService.hasCredentialReadPermission(userContext, credentialName)) {
@@ -67,7 +67,7 @@ public class CredentialHandler {
         userContext,
         auditRecordParameters,
         credentialName,
-        credentialDataService::findMostRecent
+        credentialVersionDataService::findMostRecent
     );
     return DataResponse.fromEntity(singletonList(credential));
   }
@@ -81,7 +81,7 @@ public class CredentialHandler {
         userContext,
         auditRecordParameters,
         credentialUuid,
-        credentialDataService::findByUuid
+        credentialVersionDataService::findByUuid
     ));
   }
 

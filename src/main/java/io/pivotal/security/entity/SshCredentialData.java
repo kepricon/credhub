@@ -13,7 +13,7 @@ import javax.persistence.SecondaryTable;
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 
-public class SshCredentialData extends CredentialData<SshCredentialData> {
+public class SshCredentialData extends CredentialVersionData<SshCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "ssh";
   static final String TABLE_NAME = "SshCredential";

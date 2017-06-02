@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.CertificateCredential;
@@ -15,7 +15,7 @@ import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.repository.CredentialRepository;
+import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -74,10 +74,10 @@ public class EncryptionKeyRotatorTest {
   private WebApplicationContext webApplicationContext;
 
   @Autowired
-  private CredentialRepository credentialRepository;
+  private CredentialVersionRepository credentialVersionRepository;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @SpyBean
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -126,17 +126,17 @@ public class EncryptionKeyRotatorTest {
 
     setupInitialContext();
 
-    Slice<Credential> beforeRotation = credentialDataService
+    Slice<Credential> beforeRotation = credentialVersionDataService
         .findEncryptedWithAvailableInactiveKey();
     int numberToRotate = beforeRotation.getNumberOfElements();
 
     assertThat(
-        credentialRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
+        credentialVersionRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
             .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
 
     encryptionKeyRotator.rotate();
 
-    Slice<Credential> afterRotation = credentialDataService
+    Slice<Credential> afterRotation = credentialVersionDataService
         .findEncryptedWithAvailableInactiveKey();
     int numberToRotateWhenDone = afterRotation.getNumberOfElements();
 
@@ -148,7 +148,7 @@ public class EncryptionKeyRotatorTest {
 
     // Gets updated to use current key:
     assertThat(
-        credentialRepository
+        credentialVersionRepository
             .findOneByUuid(credentialWithOldKey.getUuid())
             .getEncryptionKeyUuid(),
         equalTo(encryptionKeyCanaryMapper.getActiveUuid())
@@ -156,23 +156,23 @@ public class EncryptionKeyRotatorTest {
 
     assertThat(uuids, hasItem(credentialWithOldKey.getUuid()));
 
-    assertThat(credentialRepository.findOneByUuid(password.getUuid())
+    assertThat(credentialVersionRepository.findOneByUuid(password.getUuid())
         .getEncryptionKeyUuid(), equalTo(encryptionKeyCanaryMapper.getActiveUuid()));
     assertThat(uuids, hasItem(password.getUuid()));
 
     // Unchanged because we don't have the key:
     assertThat(
-        credentialRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
+        credentialVersionRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
             .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
     assertThat(uuids, not(hasItem(credentialWithUnknownKey.getUuid())));
 
     // Unchanged because it's already up to date:
     assertThat(
-        credentialRepository.findOneByUuid(credentialWithCurrentKey.getUuid())
+        credentialVersionRepository.findOneByUuid(credentialWithCurrentKey.getUuid())
             .getEncryptionKeyUuid(), equalTo(encryptionKeyCanaryMapper.getActiveUuid()));
     assertThat(uuids, not(hasItem(credentialWithCurrentKey.getUuid())));
 
-    PasswordCredential rotatedPassword = (PasswordCredential) credentialDataService
+    PasswordCredential rotatedPassword = (PasswordCredential) credentialVersionDataService
         .findMostRecent(passwordName);
     assertThat(rotatedPassword.getPassword(), equalTo("test-password-plaintext"));
     assertThat(rotatedPassword.getGenerationParameters(), samePropertyValuesAs(
@@ -202,7 +202,7 @@ public class EncryptionKeyRotatorTest {
         CredentialName credentialName = credentialNameDataService.find(passwordName);
 
     final PasswordCredentialData firstEncryption =
-        (PasswordCredentialData) credentialRepository
+        (PasswordCredentialData) credentialVersionRepository
             .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
 
     final byte[] firstEncryptedValue = firstEncryption.getEncryptedValue().clone();
@@ -214,7 +214,7 @@ public class EncryptionKeyRotatorTest {
     encryptionKeyRotator.rotate();
 
     final PasswordCredentialData secondEncryption =
-        (PasswordCredentialData) credentialRepository
+        (PasswordCredentialData) credentialVersionRepository
             .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
     assertThat(firstEncryptedValue,
         not(equalTo(secondEncryption.getEncryptedValue())));
@@ -251,7 +251,7 @@ public class EncryptionKeyRotatorTest {
         CredentialName credentialName = credentialNameDataService.find(certificateName);
 
     final byte[] firstEncryption =
-        credentialRepository
+        credentialVersionRepository
             .findAllByCredentialNameUuid(credentialName.getUuid()).get(0).getEncryptedValue()
             .clone();
 
@@ -260,7 +260,7 @@ public class EncryptionKeyRotatorTest {
     encryptionKeyRotator.rotate();
 
     final CertificateCredentialData secondEncryption =
-        (CertificateCredentialData) credentialRepository
+        (CertificateCredentialData) credentialVersionRepository
             .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
     assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValue())));
 
@@ -278,7 +278,7 @@ public class EncryptionKeyRotatorTest {
         .setCertificate("my-cert")
         .setPrivateKey("cert-private-key");
 
-    credentialDataService.save(credentialWithCurrentKey);
+    credentialVersionDataService.save(credentialWithCurrentKey);
 
     final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password",
         encryptionService);
@@ -302,7 +302,7 @@ public class EncryptionKeyRotatorTest {
     certificateCredentialData1.setNonce(encryption.nonce);
     certificateCredentialData1.setEncryptionKeyUuid(oldCanary.getUuid());
     credentialWithOldKey = new CertificateCredential(certificateCredentialData1);
-    credentialDataService.save(credentialWithOldKey);
+    credentialVersionDataService.save(credentialWithOldKey);
 
     unknownCanary = new EncryptionKeyCanary();
     unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes());
@@ -316,7 +316,7 @@ public class EncryptionKeyRotatorTest {
         .setEncryptor(encryptor)
         .setPrivateKey("cert-private-key");
     certificateCredentialData2.setEncryptionKeyUuid(unknownCanary.getUuid());
-    credentialDataService.save(credentialWithUnknownKey);
+    credentialVersionDataService.save(credentialWithUnknownKey);
 
     passwordName = "/test-password";
     final Encryption credentialEncryption = encryptionService
@@ -337,7 +337,7 @@ public class EncryptionKeyRotatorTest {
 
     password = new PasswordCredential(passwordCredentialData);
 
-    credentialDataService.save(password);
+    credentialVersionDataService.save(password);
   }
 
   private void setActiveKey(int index) {

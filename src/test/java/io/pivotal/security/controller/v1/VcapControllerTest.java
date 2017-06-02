@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.helper.AuditingHelper;
@@ -57,7 +57,7 @@ public class VcapControllerTest {
   EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  CredentialDataService mockCredentialDataService;
+  CredentialVersionDataService mockCredentialVersionDataService;
   private MockMvc mockMvc;
   private AuditingHelper auditingHelper;
   MockHttpServletRequestBuilder post;
@@ -116,11 +116,11 @@ public class VcapControllerTest {
 
             doReturn(
                 jsonCredential
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+            ).when(mockCredentialVersionDataService).findMostRecent("/cred1");
 
             doReturn(
                 jsonCredential1
-            ).when(mockCredentialDataService).findMostRecent("/cred2");
+            ).when(mockCredentialVersionDataService).findMostRecent("/cred2");
 
             mockMvc.perform(post).andDo(print()).andExpect(status().isOk())
                 .andExpect(jsonPath("$.VCAP_SERVICES.pp-config-server[0].credentials.secret1")
@@ -140,11 +140,11 @@ public class VcapControllerTest {
 
             doReturn(
                 jsonCredential
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+            ).when(mockCredentialVersionDataService).findMostRecent("/cred1");
 
             doReturn(
                 jsonCredential1
-            ).when(mockCredentialDataService).findMostRecent("/cred2");
+            ).when(mockCredentialVersionDataService).findMostRecent("/cred2");
 
             mockMvc.perform(post).andExpect(status().isOk());
 
@@ -163,7 +163,7 @@ public class VcapControllerTest {
 
             doReturn(
                 valueCredential
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+            ).when(mockCredentialVersionDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -193,7 +193,7 @@ public class VcapControllerTest {
           it("should return an error", () -> {
             doReturn(
                 null
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+            ).when(mockCredentialVersionDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

@@ -25,10 +25,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class CredentialRepositoryTest {
+public class CredentialVersionRepositoryTest {
 
   @Autowired
-  CredentialRepository subject;
+  CredentialVersionRepository subject;
 
   @Autowired
   CredentialNameRepository credentialNameRepository;

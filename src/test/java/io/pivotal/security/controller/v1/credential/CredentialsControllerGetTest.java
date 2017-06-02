@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.credential;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.exceptions.KeyNotFoundException;
@@ -73,7 +73,7 @@ public class CredentialsControllerGetTest {
   EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
@@ -130,16 +130,16 @@ public class CredentialsControllerGetTest {
 
         doReturn(
             valueCredential1
-        ).when(credentialDataService).findMostRecent(credentialName);
+        ).when(credentialVersionDataService).findMostRecent(credentialName);
         doReturn(
             newArrayList(valueCredential1, valueCredential2)
-        ).when(credentialDataService).findAllByName(credentialName);
+        ).when(credentialVersionDataService).findAllByName(credentialName);
         doReturn(
             valueCredential1
-        ).when(credentialDataService).findMostRecent(credentialName);
+        ).when(credentialVersionDataService).findMostRecent(credentialName);
         doReturn(
             valueCredential1
-        ).when(credentialDataService).findByUuid(uuid.toString());
+        ).when(credentialVersionDataService).findByUuid(uuid.toString());
       });
 
       describe(
@@ -184,7 +184,7 @@ public class CredentialsControllerGetTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.data", hasSize(1)));
 
-          verify(credentialDataService).findMostRecent(credentialName);
+          verify(credentialVersionDataService).findMostRecent(credentialName);
         });
 
         it("when false should return all versions", () -> {
@@ -260,7 +260,7 @@ public class CredentialsControllerGetTest {
 
         doThrow(new KeyNotFoundException("error.missing_encryption_key"))
             .when(encryptor).decrypt(any());
-        doReturn(Arrays.asList(valueCredential)).when(credentialDataService)
+        doReturn(Arrays.asList(valueCredential)).when(credentialVersionDataService)
             .findAllByName(credentialName);
       });
 

@@ -7,13 +7,13 @@ import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
-import io.pivotal.security.repository.CredentialRepository;
+import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -57,10 +57,10 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class CredentialDataServiceTest {
+public class CredentialVersionDataServiceTest {
 
   @Autowired
-  CredentialRepository credentialRepository;
+  CredentialVersionRepository credentialVersionRepository;
 
 
   @Autowired
@@ -76,7 +76,7 @@ public class CredentialDataServiceTest {
   CurrentTimeProvider mockCurrentTimeProvider;
 
   @Autowired
-  CredentialDataService subject;
+  CredentialVersionDataService subject;
 
   private Consumer<Long> fakeTimeSetter;
   private UUID activeCanaryUuid;
@@ -106,13 +106,13 @@ public class CredentialDataServiceTest {
     assertNotNull(savedCredential);
 
     PasswordCredential savedPasswordCredential = (PasswordCredential) subject.findMostRecent("/my-credential");
-    CredentialData credentialData = credentialRepository.findOneByUuid(savedCredential.getUuid());
+    CredentialVersionData credentialVersionData = credentialVersionRepository.findOneByUuid(savedCredential.getUuid());
 
     assertThat(savedPasswordCredential.getName(), equalTo(credential.getName()));
     assertThat(savedPasswordCredential.getUuid(), equalTo(credential.getUuid()));
 
-    assertThat(credentialData.getCredentialName().getName(), equalTo("/my-credential"));
-    assertThat(credentialData.getEncryptedValue(), equalTo("credential-password".getBytes()));
+    assertThat(credentialVersionData.getCredentialName().getName(), equalTo("/my-credential"));
+    assertThat(credentialVersionData.getEncryptedValue(), equalTo("credential-password".getBytes()));
   }
 
   @Test
@@ -129,11 +129,11 @@ public class CredentialDataServiceTest {
     subject.save(credential);
 
     PasswordCredential savedPasswordCredential = (PasswordCredential) subject.findMostRecent("/my-credential-2");
-    CredentialData credentialData = credentialRepository.findOneByUuid(savedPasswordCredential.getUuid());
+    CredentialVersionData credentialVersionData = credentialVersionRepository.findOneByUuid(savedPasswordCredential.getUuid());
 
-    assertThat(credentialData.getCredentialName().getName(), equalTo("/my-credential-2"));
-    assertThat(credentialData.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
-    assertThat(credentialData.getUuid(), equalTo(credential.getUuid()));
+    assertThat(credentialVersionData.getCredentialName().getName(), equalTo("/my-credential-2"));
+    assertThat(credentialVersionData.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
+    assertThat(credentialVersionData.getUuid(), equalTo(credential.getUuid()));
   }
 
   @Test

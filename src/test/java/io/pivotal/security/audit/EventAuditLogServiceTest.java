@@ -3,7 +3,7 @@ package io.pivotal.security.audit;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.EventAuditRecordDataService;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
@@ -59,7 +59,7 @@ public class EventAuditLogServiceTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @Autowired
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @SpyBean
   private TransactionManagerDelegate transactionManager;
@@ -103,11 +103,11 @@ public class EventAuditLogServiceTest {
           eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_ACCESS);
           ValueCredentialData entity = new ValueCredentialData("keyName");
           entity.setEncryptedValue("value".getBytes());
-          return credentialDataService.save(entity);
+          return credentialVersionDataService.save(entity);
         }
     );
 
-    assertThat(credentialDataService.count(), equalTo(1L));
+    assertThat(credentialVersionDataService.count(), equalTo(1L));
     checkAuditRecord(true);
   }
 
@@ -124,7 +124,7 @@ public class EventAuditLogServiceTest {
 
         ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        credentialDataService.save(entity);
+        credentialVersionDataService.save(entity);
 
         throw new RuntimeException("controller method failed");
       });
@@ -136,7 +136,7 @@ public class EventAuditLogServiceTest {
       assertThat(transactionStatuses.get(0).isCompleted(), equalTo(true));
       assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
 
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -154,7 +154,7 @@ public class EventAuditLogServiceTest {
 
         ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        return credentialDataService.save(entity);
+        return credentialVersionDataService.save(entity);
       });
     } finally {
       final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
@@ -163,7 +163,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(0).isCompleted(), equalTo(true));
 
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -177,7 +177,7 @@ public class EventAuditLogServiceTest {
 
         ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        credentialDataService.save(entity);
+        credentialVersionDataService.save(entity);
 
         throw new RuntimeException("controller method failed");
       });
@@ -206,11 +206,11 @@ public class EventAuditLogServiceTest {
 
           ValueCredentialData entity = new ValueCredentialData("keyName");
           entity.setEncryptedValue("value".getBytes());
-          return credentialDataService.save(entity);
+          return credentialVersionDataService.save(entity);
         }
     );
 
-    assertThat(credentialDataService.count(), equalTo(1L));
+    assertThat(credentialVersionDataService.count(), equalTo(1L));
     checkAuditRecords(newArrayList(parameters1, parameters2), true);
   }
 
@@ -237,7 +237,7 @@ public class EventAuditLogServiceTest {
 
         ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        return credentialDataService.save(entity);
+        return credentialVersionDataService.save(entity);
       });
     } finally {
       final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
@@ -246,7 +246,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(0).isCompleted(), equalTo(true));
 
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -275,7 +275,7 @@ public class EventAuditLogServiceTest {
         ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
 
-        credentialDataService.save(entity);
+        credentialVersionDataService.save(entity);
 
         throw new RuntimeException("test");
       });
@@ -286,7 +286,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
 
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -309,13 +309,13 @@ public class EventAuditLogServiceTest {
 
         ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        credentialDataService.save(entity);
+        credentialVersionDataService.save(entity);
 
         throw new RuntimeException("controller method failed");
       });
     } finally {
       checkAuditRecords(newArrayList(parameters1, parameters2), false);
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
     }
   }
 

@@ -5,7 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.RsaCredentialData;
-import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -144,7 +144,7 @@ public class CredentialRotationTest {
   }
 
 
-  private void assertRotation(Credential credential, CredentialData delegate) {
+  private void assertRotation(Credential credential, CredentialVersionData delegate) {
     credential.setEncryptor(encryptor);
     delegate.setEncryptionKeyUuid(oldEncryptionKeyUuid);
     delegate.setEncryptedValue("old-encrypted-value".getBytes());

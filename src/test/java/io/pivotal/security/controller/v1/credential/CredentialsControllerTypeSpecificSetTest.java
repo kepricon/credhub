@@ -9,7 +9,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CryptSaltFactory;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
@@ -103,7 +103,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   WebApplicationContext webApplicationContext;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @SpyBean
   SetRequestHandler setRequestHandler;
@@ -336,7 +336,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
           it("should return the expected response", () -> {
             ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-            verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+            verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
             response.andExpect(multiJsonPath(typeSpecificResponseFields))
                 .andExpect(multiJsonPath(
                     "$.type", credentialType,
@@ -354,7 +354,7 @@ public class CredentialsControllerTypeSpecificSetTest {
                     isA(BaseCredentialSetRequest.class),
                     isA(PermissionEntry.class));
             ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-            verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+            verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
             T newCredential = (T) argumentCaptor.getValue();
 
@@ -410,7 +410,7 @@ public class CredentialsControllerTypeSpecificSetTest {
       describe("with an existing credential", () -> {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
-          doReturn(existingCredentialProvider.get()).when(credentialDataService).findMostRecent(credentialName);
+          doReturn(existingCredentialProvider.get()).when(credentialVersionDataService).findMostRecent(credentialName);
         });
 
         describe("with the overwrite flag set to true", () -> {
@@ -431,7 +431,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
           it("should return the correct response", () -> {
             ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-            verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+            verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
             response.andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -443,7 +443,7 @@ public class CredentialsControllerTypeSpecificSetTest {
           });
 
           it("asks the data service to persist the credential", () -> {
-            T credential = (T) credentialDataService.findMostRecent(credentialName);
+            T credential = (T) credentialVersionDataService.findMostRecent(credentialName);
             credentialAssertions.accept(credential);
           });
 
@@ -477,7 +477,7 @@ public class CredentialsControllerTypeSpecificSetTest {
           });
 
           it("should not persist the credential", () -> {
-            verify(credentialDataService, times(0)).save(any(Credential.class));
+            verify(credentialVersionDataService, times(0)).save(any(Credential.class));
           });
 
           it("persists an audit entry", () -> {

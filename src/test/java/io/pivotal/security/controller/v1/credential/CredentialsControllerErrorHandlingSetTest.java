@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.helper.AuditingHelper;
@@ -57,7 +57,7 @@ public class CredentialsControllerErrorHandlingSetTest {
   EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   private AuditingHelper auditingHelper;
 
@@ -88,7 +88,7 @@ public class CredentialsControllerErrorHandlingSetTest {
             valueCredential.setValue(credentialValue);
             doReturn(
                 valueCredential
-            ).when(credentialDataService).findMostRecent(credentialName);
+            ).when(credentialVersionDataService).findMostRecent(credentialName);
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -450,7 +450,7 @@ public class CredentialsControllerErrorHandlingSetTest {
 
     mockMvc.perform(put);
 
-    credentialDataService.findMostRecent(name).getUuid();
-    reset(credentialDataService);
+    credentialVersionDataService.findMostRecent(name).getUuid();
+    reset(credentialVersionDataService);
   }
 }

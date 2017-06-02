@@ -4,7 +4,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -28,8 +28,8 @@ public class JsonInterpolationService {
   }
 
   public DocumentContext interpolateCredhubReferences(String requestBody,
-      CredentialDataService credentialDataService,
-      List<EventAuditRecordParameters> eventAuditRecordParameters) throws Exception {
+                                                      CredentialVersionDataService credentialVersionDataService,
+                                                      List<EventAuditRecordParameters> eventAuditRecordParameters) throws Exception {
     DocumentContext requestJson = parseToJson(requestBody);
 
     Object request = requestJson.json();
@@ -63,7 +63,7 @@ public class JsonInterpolationService {
             }
             String credentialName = getCredentialNameFromRef((String) credhubRef);
 
-            Credential credential = credentialDataService.findMostRecent(credentialName);
+            Credential credential = credentialVersionDataService.findMostRecent(credentialName);
             if (credential == null) {
               throw new InvalidObjectException("error.invalid_access");
             }

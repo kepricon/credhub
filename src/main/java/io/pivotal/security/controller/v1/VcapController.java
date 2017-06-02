@@ -4,7 +4,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.service.JsonInterpolationService;
 import org.apache.logging.log4j.core.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +26,17 @@ import java.io.InputStreamReader;
 public class VcapController {
 
   static final String API_V1 = "/api/v1";
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
   private final JsonInterpolationService jsonInterpolationService;
   private final EventAuditLogService eventAuditLogService;
 
   @Autowired
   VcapController(
       JsonInterpolationService jsonInterpolationService,
-      CredentialDataService credentialDataService,
+      CredentialVersionDataService credentialVersionDataService,
       EventAuditLogService eventAuditLogService) {
     this.jsonInterpolationService = jsonInterpolationService;
-    this.credentialDataService = credentialDataService;
+    this.credentialVersionDataService = credentialVersionDataService;
     this.eventAuditLogService = eventAuditLogService;
   }
 
@@ -53,7 +53,7 @@ public class VcapController {
       DocumentContext responseJson;
       try {
         responseJson = jsonInterpolationService
-            .interpolateCredhubReferences(requestAsString, credentialDataService,
+            .interpolateCredhubReferences(requestAsString, credentialVersionDataService,
                 eventAuditRecordParameters);
       } catch (Exception e) {
         throw new RuntimeException(e);

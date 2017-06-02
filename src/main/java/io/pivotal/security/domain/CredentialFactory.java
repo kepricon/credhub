@@ -9,7 +9,7 @@ import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.entity.JsonCredentialData;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.RsaCredentialData;
@@ -33,35 +33,35 @@ public class CredentialFactory {
     this.encryptor = encryptor;
   }
 
-  public Credential makeCredentialFromEntity(CredentialData credentialData) {
-    if (credentialData == null) {
+  public Credential makeCredentialFromEntity(CredentialVersionData credentialVersionData) {
+    if (credentialVersionData == null) {
       return null;
     }
 
     Credential returnValue;
-    if (credentialData instanceof CertificateCredentialData) {
-      returnValue = new CertificateCredential((CertificateCredentialData) credentialData);
-    } else if (credentialData instanceof PasswordCredentialData) {
-      returnValue = new PasswordCredential((PasswordCredentialData) credentialData);
-    } else if (credentialData instanceof RsaCredentialData) {
-      returnValue = new RsaCredential((RsaCredentialData) credentialData);
-    } else if (credentialData instanceof SshCredentialData) {
-      returnValue = new SshCredential((SshCredentialData) credentialData);
-    } else if (credentialData instanceof ValueCredentialData) {
-      returnValue = new ValueCredential((ValueCredentialData) credentialData);
-    } else if (credentialData instanceof JsonCredentialData) {
-      returnValue = new JsonCredential((JsonCredentialData) credentialData);
-    } else if (credentialData instanceof UserCredentialData) {
-      returnValue = new UserCredential((UserCredentialData) credentialData);
+    if (credentialVersionData instanceof CertificateCredentialData) {
+      returnValue = new CertificateCredential((CertificateCredentialData) credentialVersionData);
+    } else if (credentialVersionData instanceof PasswordCredentialData) {
+      returnValue = new PasswordCredential((PasswordCredentialData) credentialVersionData);
+    } else if (credentialVersionData instanceof RsaCredentialData) {
+      returnValue = new RsaCredential((RsaCredentialData) credentialVersionData);
+    } else if (credentialVersionData instanceof SshCredentialData) {
+      returnValue = new SshCredential((SshCredentialData) credentialVersionData);
+    } else if (credentialVersionData instanceof ValueCredentialData) {
+      returnValue = new ValueCredential((ValueCredentialData) credentialVersionData);
+    } else if (credentialVersionData instanceof JsonCredentialData) {
+      returnValue = new JsonCredential((JsonCredentialData) credentialVersionData);
+    } else if (credentialVersionData instanceof UserCredentialData) {
+      returnValue = new UserCredential((UserCredentialData) credentialVersionData);
     } else {
-      throw new RuntimeException("Unrecognized type: " + credentialData.getClass().getName());
+      throw new RuntimeException("Unrecognized type: " + credentialVersionData.getClass().getName());
     }
 
     returnValue.setEncryptor(encryptor);
     return returnValue;
   }
 
-  public List<Credential> makeCredentialsFromEntities(List<CredentialData> daos) {
+  public List<Credential> makeCredentialsFromEntities(List<CredentialVersionData> daos) {
     return daos.stream().map(this::makeCredentialFromEntity).collect(Collectors.toList());
   }
 

@@ -28,7 +28,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.RsaCredential;
@@ -70,7 +70,7 @@ public class CredentialsControllerRegenerateTest {
   WebApplicationContext webApplicationContext;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   PassayStringCredentialGenerator passwordGenerator;
@@ -135,7 +135,7 @@ public class CredentialsControllerRegenerateTest {
             .setPasswordAndGenerationParameters("original-password", generationParameters);
         originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
-        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
+        doReturn(originalCredential).when(credentialVersionDataService).findMostRecent("my-password");
 
         doAnswer(invocation -> {
           PasswordCredential newCredential = invocation.getArgumentAt(0, PasswordCredential.class);
@@ -143,7 +143,7 @@ public class CredentialsControllerRegenerateTest {
           newCredential.setUuid(uuid);
           newCredential.setVersionCreatedAt(frozenTime.plusSeconds(10));
           return newCredential;
-        }).when(credentialDataService).save(any(PasswordCredential.class));
+        }).when(credentialVersionDataService).save(any(PasswordCredential.class));
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
@@ -164,7 +164,7 @@ public class CredentialsControllerRegenerateTest {
 
         ArgumentCaptor<PasswordCredential> argumentCaptor = ArgumentCaptor
             .forClass(PasswordCredential.class);
-        verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+        verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
         PasswordCredential newPassword = argumentCaptor.getValue();
 
@@ -185,7 +185,7 @@ public class CredentialsControllerRegenerateTest {
         originalCredential.setEncryptor(encryptor);
         originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
-        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-rsa");
+        doReturn(originalCredential).when(credentialVersionDataService).findMostRecent("my-rsa");
 
         doAnswer(invocation -> {
           RsaCredential newCredential = invocation.getArgumentAt(0, RsaCredential.class);
@@ -193,7 +193,7 @@ public class CredentialsControllerRegenerateTest {
           newCredential.setUuid(uuid);
           newCredential.setVersionCreatedAt(frozenTime.plusSeconds(10));
           return newCredential;
-        }).when(credentialDataService).save(any(RsaCredential.class));
+        }).when(credentialVersionDataService).save(any(RsaCredential.class));
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
@@ -214,7 +214,7 @@ public class CredentialsControllerRegenerateTest {
 
         ArgumentCaptor<RsaCredential> argumentCaptor = ArgumentCaptor
             .forClass(RsaCredential.class);
-        verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+        verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
         RsaCredential newRsa = argumentCaptor.getValue();
 
@@ -235,7 +235,7 @@ public class CredentialsControllerRegenerateTest {
         originalCredential.setEncryptor(encryptor);
         originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
-        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-ssh");
+        doReturn(originalCredential).when(credentialVersionDataService).findMostRecent("my-ssh");
 
         doAnswer(invocation -> {
           SshCredential newCredential = invocation.getArgumentAt(0, SshCredential.class);
@@ -243,7 +243,7 @@ public class CredentialsControllerRegenerateTest {
           newCredential.setUuid(uuid);
           newCredential.setVersionCreatedAt(frozenTime.plusSeconds(10));
           return newCredential;
-        }).when(credentialDataService).save(any(SshCredential.class));
+        }).when(credentialVersionDataService).save(any(SshCredential.class));
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
@@ -264,7 +264,7 @@ public class CredentialsControllerRegenerateTest {
 
         ArgumentCaptor<SshCredential> argumentCaptor = ArgumentCaptor
             .forClass(SshCredential.class);
-        verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+        verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
         SshCredential newSsh = argumentCaptor.getValue();
 
@@ -279,7 +279,7 @@ public class CredentialsControllerRegenerateTest {
 
     describe("regenerate request for a non-existent credential", () -> {
       beforeEach(() -> {
-        doReturn(null).when(credentialDataService).findMostRecent("my-password");
+        doReturn(null).when(credentialVersionDataService).findMostRecent("my-password");
 
         response = mockMvc.perform(post("/api/v1/data")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -309,7 +309,7 @@ public class CredentialsControllerRegenerateTest {
         PasswordCredential originalCredential = new PasswordCredential("my-password");
         originalCredential.setEncryptor(encryptor);
         originalCredential.setPasswordAndGenerationParameters("abcde", null);
-        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
+        doReturn(originalCredential).when(credentialVersionDataService).findMostRecent("my-password");
 
         response = mockMvc.perform(post("/api/v1/data")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -344,7 +344,7 @@ public class CredentialsControllerRegenerateTest {
                 .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());
 
             passwordCredentialData.setEncryptionKeyUuid(UUID.randomUUID());
-            doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
+            doReturn(originalCredential).when(credentialVersionDataService).findMostRecent("my-password");
 
             response = mockMvc.perform(post("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

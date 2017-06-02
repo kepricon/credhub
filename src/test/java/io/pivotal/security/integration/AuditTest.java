@@ -6,7 +6,7 @@ import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.repository.CredentialRepository;
+import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -55,7 +55,7 @@ public class AuditTest {
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
   @Autowired
-  private CredentialRepository credentialRepository;
+  private CredentialVersionRepository credentialVersionRepository;
   @SpyBean
   private Logger logger;
   @SpyBean
@@ -167,7 +167,7 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isInternalServerError());
 
-    assertThat(credentialRepository.count(), equalTo(0L));
+    assertThat(credentialVersionRepository.count(), equalTo(0L));
     assertThat(eventAuditRecordRepository.count(), equalTo(0L));
 
     assertThat(requestAuditRecordRepository.count(), equalTo(1L));

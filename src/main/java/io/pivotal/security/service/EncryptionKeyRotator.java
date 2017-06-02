@@ -1,6 +1,6 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class EncryptionKeyRotator {
 
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
   private final Logger logger;
 
-  EncryptionKeyRotator(CredentialDataService credentialDataService) {
-    this.credentialDataService = credentialDataService;
+  EncryptionKeyRotator(CredentialVersionDataService credentialVersionDataService) {
+    this.credentialVersionDataService = credentialVersionDataService;
     this.logger = LogManager.getLogger(this.getClass());
   }
 
@@ -24,21 +24,21 @@ public class EncryptionKeyRotator {
     logger.info("Starting encryption key rotation.");
     int rotatedRecordCount = 0;
 
-    final long startingNotRotatedRecordCount = credentialDataService.countAllNotEncryptedByActiveKey();
+    final long startingNotRotatedRecordCount = credentialVersionDataService.countAllNotEncryptedByActiveKey();
 
-    Slice<Credential> credentialsEncryptedByOldKey = credentialDataService
+    Slice<Credential> credentialsEncryptedByOldKey = credentialVersionDataService
         .findEncryptedWithAvailableInactiveKey();
     while (credentialsEncryptedByOldKey.hasContent()) {
       for (Credential credential : credentialsEncryptedByOldKey.getContent()) {
         try {
           credential.rotate();
-          credentialDataService.save(credential);
+          credentialVersionDataService.save(credential);
           rotatedRecordCount++;
         } catch (KeyNotFoundException e) {
           logger.error("key not found for value, unable to rotate");
         }
       }
-      credentialsEncryptedByOldKey = credentialDataService.findEncryptedWithAvailableInactiveKey();
+      credentialsEncryptedByOldKey = credentialVersionDataService.findEncryptedWithAvailableInactiveKey();
     }
 
     final long finish = System.currentTimeMillis();

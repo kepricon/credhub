@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 
 @Entity
 @DiscriminatorValue(JsonCredentialData.CREDENTIAL_TYPE)
-public class JsonCredentialData extends CredentialData<JsonCredentialData> {
+public class JsonCredentialData extends CredentialVersionData<JsonCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "json";
 

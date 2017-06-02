@@ -6,7 +6,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -26,19 +26,19 @@ import static io.pivotal.security.audit.EventAuditRecordParametersFactory.create
 @Service
 public class CredentialService {
 
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
   private final PermissionsDataService permissionsDataService;
   private PermissionService permissionService;
   private final CredentialFactory credentialFactory;
 
   @Autowired
   public CredentialService(
-      CredentialDataService credentialDataService,
+      CredentialVersionDataService credentialVersionDataService,
       PermissionsDataService permissionsDataService,
       PermissionService permissionService,
       CredentialFactory credentialFactory
   ) {
-    this.credentialDataService = credentialDataService;
+    this.credentialVersionDataService = credentialVersionDataService;
     this.permissionsDataService = permissionsDataService;
     this.permissionService = permissionService;
     this.credentialFactory = credentialFactory;
@@ -54,7 +54,7 @@ public class CredentialService {
       CredentialValue credentialValue,
       List<PermissionEntry> accessControlEntries,
       PermissionEntry currentUserPermissionEntry) {
-    Credential existingCredential = credentialDataService.findMostRecent(credentialName);
+    Credential existingCredential = credentialVersionDataService.findMostRecent(credentialName);
 
     boolean shouldWriteNewEntity = existingCredential == null || isOverwrite;
 
@@ -84,7 +84,7 @@ public class CredentialService {
           credentialValue,
           existingCredential,
           generationParameters);
-      storedCredentialVersion = credentialDataService.save(newVersion);
+      storedCredentialVersion = credentialVersionDataService.save(newVersion);
 
       permissionsDataService.saveAccessControlEntries(
           storedCredentialVersion.getCredentialName(),

@@ -23,7 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class CertificateAuthorityServiceTest {
 
   CertificateAuthorityService certificateAuthorityService;
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
   CertificateCredentialValue certificate;
   CertificateCredential certificateCredential;
 
@@ -32,15 +32,15 @@ public class CertificateAuthorityServiceTest {
     certificate = new CertificateCredentialValue(null, SELF_SIGNED_CA_CERT, "my-key", null);
     certificateCredential = mock(CertificateCredential.class);
 
-    credentialDataService = mock(CredentialDataService.class);
-    certificateAuthorityService = new CertificateAuthorityService(credentialDataService);
+    credentialVersionDataService = mock(CredentialVersionDataService.class);
+    certificateAuthorityService = new CertificateAuthorityService(credentialVersionDataService);
 
     new BouncyCastleProviderConfiguration().bouncyCastleProvider();
   }
 
   @Test
   public void findMostRecent_whenACaDoesNotExist_throwsException() {
-    when(credentialDataService.findMostRecent(any(String.class))).thenReturn(null);
+    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(null);
 
     try {
       certificateAuthorityService.findMostRecent("any ca name");
@@ -51,7 +51,7 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_givenExistingCa_returnsTheCa() {
-    when(credentialDataService.findMostRecent("my-ca-name")).thenReturn(certificateCredential);
+    when(credentialVersionDataService.findMostRecent("my-ca-name")).thenReturn(certificateCredential);
     when(certificateCredential.getPrivateKey()).thenReturn("my-key");
     when(certificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
@@ -61,7 +61,7 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_whenCredentialIsNotACa_throwsException() {
-    when(credentialDataService.findMostRecent("actually-a-password"))
+    when(credentialVersionDataService.findMostRecent("actually-a-password"))
         .thenReturn(new PasswordCredential());
 
     try {
@@ -76,7 +76,7 @@ public class CertificateAuthorityServiceTest {
     CertificateCredential notACertificateAuthority = mock(CertificateCredential.class);
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
-    when(credentialDataService.findMostRecent("just-a-certificate"))
+    when(credentialVersionDataService.findMostRecent("just-a-certificate"))
         .thenReturn(notACertificateAuthority);
 
 

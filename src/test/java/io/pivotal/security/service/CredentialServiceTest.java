@@ -5,7 +5,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.Encryptor;
@@ -47,7 +47,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class CredentialServiceTest {
 
   @Mock
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Mock
   private PermissionsDataService permissionsDataService;
@@ -78,7 +78,7 @@ public class CredentialServiceTest {
     initMocks(this);
 
     subject = new CredentialService(
-        credentialDataService,
+        credentialVersionDataService,
         permissionsDataService,
         permissionService,
         credentialFactory);
@@ -99,7 +99,7 @@ public class CredentialServiceTest {
 
   @Test(expected = ParameterizedValidationException.class)
   public void performSet_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         userContext,
         parametersList,
@@ -114,7 +114,7 @@ public class CredentialServiceTest {
 
   @Test
   public void performSet_whenThereIsAnExistingCredentialAndOverwriteIsFalse_itLogsCREDENTIAL_ACCESS() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         userContext,
         parametersList,
@@ -132,8 +132,8 @@ public class CredentialServiceTest {
 
   @Test
   public void performSet_whenThereIsAnExistingCredentialAndOverwriteIsTrue_itLogsCREDENTIAL_UPDATE() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
 
     subject.save(
@@ -153,7 +153,7 @@ public class CredentialServiceTest {
 
   @Test
   public void performSet_whenThereIsAnExistingCredential_itShouldCallVerifyCredentialWritePermission() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         userContext,
         parametersList,
@@ -171,7 +171,7 @@ public class CredentialServiceTest {
 
   @Test
   public void performSet_whenThereIsNoExistingCredential_itShouldNotCallVerifyCredentialWritePermission() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
         userContext,
@@ -190,7 +190,7 @@ public class CredentialServiceTest {
 
   @Test
   public void performSet_whenThereIsNoExistingCredential_itShouldAddAceForTheCurrentUser() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
         userContext,
@@ -213,9 +213,9 @@ public class CredentialServiceTest {
 
   @Test
   public void performSet_whenThereIsAnExistingCredentialAndOverWriteIsTrue_itShouldNotAddAceForTheCurrentUser() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
 
     subject.save(
         userContext,
@@ -233,7 +233,7 @@ public class CredentialServiceTest {
 
   @Test
   public void performSet_whenWritingCredential_itSavesANewVersion() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     final PasswordCredential newVersion = new PasswordCredential();
 
@@ -255,13 +255,13 @@ public class CredentialServiceTest {
         accessControlEntries,
         currentUserPermissions);
 
-    verify(credentialDataService).save(newVersion);
+    verify(credentialVersionDataService).save(newVersion);
   }
 
   @Test
   public void performSet_whenOverwriteIsTrue_itShouldSaveAccessControlEntries() {
     PasswordCredential credential = new PasswordCredential().setEncryptor(encryptor);
-    when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
+    when(credentialVersionDataService.save(any(Credential.class))).thenReturn(credential);
 
     subject.save(
         userContext,
@@ -281,7 +281,7 @@ public class CredentialServiceTest {
   @Test
   public void performSet_whenOverwriteIsTrue_itLogsACL_UPDATE() {
     PasswordCredential credential = new PasswordCredential(CREDENTIAL_NAME).setEncryptor(encryptor);
-    when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
+    when(credentialVersionDataService.save(any(Credential.class))).thenReturn(credential);
 
     accessControlEntries.addAll(Arrays.asList(
         new PermissionEntry("Spock", Arrays.asList(WRITE)),

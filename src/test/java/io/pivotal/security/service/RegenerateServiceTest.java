@@ -7,7 +7,7 @@ import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.RsaCredential;
@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class RegenerateServiceTest {
 
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
   private RegenerateService subject;
 
   private PasswordCredential passwordCredential;
@@ -61,7 +61,7 @@ public class RegenerateServiceTest {
 
   {
     beforeEach(() -> {
-      credentialDataService = mock(CredentialDataService.class);
+      credentialVersionDataService = mock(CredentialVersionDataService.class);
       passwordCredential = mock(PasswordCredential.class);
       sshCredential = mock(SshCredential.class);
       rsaCredential = mock(RsaCredential.class);
@@ -71,7 +71,7 @@ public class RegenerateServiceTest {
       userContext = mock(UserContext.class);
       currentUser = mock(PermissionEntry.class);
 
-      when(credentialDataService.findMostRecent(eq("unsupported")))
+      when(credentialVersionDataService.findMostRecent(eq("unsupported")))
           .thenReturn(credentialOfUnsupportedType);
       when(credentialService
           .save(
@@ -86,14 +86,14 @@ public class RegenerateServiceTest {
               any(PermissionEntry.class)))
           .thenReturn(mock(CredentialView.class));
       credentialOfUnsupportedType = new JsonCredential();
-      subject = new RegenerateService(credentialDataService, credentialService,
+      subject = new RegenerateService(credentialVersionDataService, credentialService,
           generatorService);
     });
 
     describe("#performRegenerate", () -> {
       describe("password", () -> {
         beforeEach(() -> {
-          when(credentialDataService.findMostRecent(eq("password")))
+          when(credentialVersionDataService.findMostRecent(eq("password")))
               .thenReturn(passwordCredential);
           CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
               .setName("password");
@@ -156,7 +156,7 @@ public class RegenerateServiceTest {
       describe("ssh & rsa", () -> {
         describe("when regenerating ssh", () -> {
           beforeEach(() -> {
-            when(credentialDataService.findMostRecent(eq("ssh")))
+            when(credentialVersionDataService.findMostRecent(eq("ssh")))
                 .thenReturn(sshCredential);
             CredentialRegenerateRequest sshRegenerateRequest = new CredentialRegenerateRequest()
                 .setName("ssh");
@@ -186,7 +186,7 @@ public class RegenerateServiceTest {
 
         describe("when regenerating rsa", () -> {
           beforeEach(() -> {
-            when(credentialDataService.findMostRecent(eq("rsa")))
+            when(credentialVersionDataService.findMostRecent(eq("rsa")))
                 .thenReturn(rsaCredential);
             CredentialRegenerateRequest rsaRegenerateRequest = new CredentialRegenerateRequest()
                 .setName("rsa");
