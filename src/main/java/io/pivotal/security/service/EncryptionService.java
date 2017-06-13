@@ -34,11 +34,6 @@ public abstract class EncryptionService {
     AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
     CipherWrapper encryptionCipher = getCipher();
 
-//    KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-//    SecretKey tmpKey = keyGen.generateKey();
-
-    //https://gist.github.com/praseodym/f2499b3e14d872fe5b4a
-
     encryptionCipher.init(Cipher.ENCRYPT_MODE, key, parameterSpec);
 
     byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
