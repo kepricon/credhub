@@ -28,9 +28,9 @@ import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "CredentialVersion")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
-@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "credential.type", discriminatorType = DiscriminatorType.STRING)
 public abstract class CredentialVersionData<Z extends CredentialVersionData> {
 
   // Use VARBINARY to make all 3 DB types happy.

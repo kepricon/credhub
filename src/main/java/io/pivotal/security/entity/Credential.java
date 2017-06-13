@@ -24,6 +24,9 @@ public class Credential {
   @Column(unique = true, nullable = false)
   private String name;
 
+  @Column(nullable = false)
+  private String type;
+
   // Needed for hibernate
   @SuppressWarnings("unused")
   Credential() {
@@ -50,4 +53,11 @@ public class Credential {
     this.name = name;
   }
 
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
 }
