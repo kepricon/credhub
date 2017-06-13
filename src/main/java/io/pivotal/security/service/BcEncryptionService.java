@@ -10,9 +10,10 @@ import org.springframework.stereotype.Component;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEParameterSpec;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "internal")
@@ -38,8 +39,8 @@ public class BcEncryptionService extends EncryptionService {
   }
 
   @Override
-  IvParameterSpec generateParameterSpec(byte[] nonce) {
-    return new IvParameterSpec(nonce);
+  AlgorithmParameterSpec generateParameterSpec(byte[] nonce) {
+    return new PBEParameterSpec(nonce, 1);
   }
 
   @Override
