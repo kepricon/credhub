@@ -1,12 +1,15 @@
 package io.pivotal.security.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.JsonObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -58,7 +61,7 @@ public class PasswordCredentialTest {
       generationParameters = new StringGenerationParameters()
           .setExcludeLower(true)
           .setLength(10);
-      String generationParametersJson = new ObjectMapper().writeValueAsString(generationParameters);
+      String generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
 
       when(encryptor.encrypt(null))
           .thenReturn(new Encryption(canaryUuid, null, null));
@@ -195,5 +198,12 @@ public class PasswordCredentialTest {
         assertThat(newCredential.getCredentialName().getAccessControlList(), hasSize(0));
       });
     });
+  }
+
+  @Test
+  public void setPasswordAndGenerationParameters_shouldSaveGenerationParams_AsSnakeCaseJson() {
+    subject.setPasswordAndGenerationParameters(PASSWORD, generationParameters);
+    String expectedJsonString = "{\"exclude_lower\":true}";
+    verify(encryptor, times(1)).encrypt(expectedJsonString);
   }
 }
