@@ -2,9 +2,11 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class EncryptionKeyCanaryDataService {
@@ -24,7 +26,7 @@ public class EncryptionKeyCanaryDataService {
     return encryptionKeyCanaryRepository.findAll();
   }
 
-  public void delete(EncryptionKeyCanary canary) {
-    encryptionKeyCanaryRepository.delete(canary);
+  public void delete(UUID uuid) {
+    encryptionKeyCanaryRepository.deleteByUuid(uuid);
   }
 }

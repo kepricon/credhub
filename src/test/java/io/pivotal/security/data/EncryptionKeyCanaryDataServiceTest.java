@@ -1,17 +1,8 @@
 package io.pivotal.security.data;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
-
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +12,16 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestData
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -96,7 +97,7 @@ public class EncryptionKeyCanaryDataServiceTest {
     assertThat(canaries, hasSize(2));
     assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
 
-    subject.delete(secondCanary);
+    subject.delete(secondCanary.getUuid());
 
     canaries = subject.findAll();
     uuids = canaries.stream().map(canary -> canary.getUuid())
@@ -110,7 +111,7 @@ public class EncryptionKeyCanaryDataServiceTest {
   public void delete_whenThereAreNoCanaries_doesNothing() {
     assertThat(subject.findAll(), hasSize(0));
 
-    subject.delete(new EncryptionKeyCanary());
+    subject.delete(new EncryptionKeyCanary().getUuid());
 
     assertThat(subject.findAll(), hasSize(0));
   }
