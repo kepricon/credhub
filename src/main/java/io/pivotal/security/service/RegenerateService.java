@@ -54,7 +54,7 @@ public class RegenerateService {
     this.regeneratableTypes.put("certificate", CertificateCredentialRegeneratable::new);
   }
 
-  public CredentialView performRegenerate(
+  public CredentialView performRegenerateByName(
       String credentialName,
       UserContext userContext,
       PermissionEntry currentUserPermissionEntry,
@@ -99,5 +99,22 @@ public class RegenerateService {
         currentUserPermissionEntry,
         auditRecordParameters
     );
+  }
+
+  public CredentialView performRegenerateBySigner(
+      String signerName,
+      UserContext userContext,
+      PermissionEntry currentUserPermissionEntry,
+      List<EventAuditRecordParameters> auditRecordParameters
+  ) {
+    List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
+    for (String name : certificateNames) {
+      this.performRegenerateByName(name, userContext, currentUserPermissionEntry,
+          auditRecordParameters);
+    }
+
+    return null;
+    // find all certs signed by signerName
+    // for each of those, use credentialService.save to regenerate it
   }
 }

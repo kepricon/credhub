@@ -3,10 +3,11 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.RegenerateRequest;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.view.CredentialView;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +47,19 @@ public class RegenerateController {
       UserContext userContext,
       RequestUuid requestUuid,
       PermissionEntry currentUserPermissionEntry,
-      @RequestBody CredentialRegenerateRequest requestBody
+      @RequestBody RegenerateRequest requestBody
   ) throws IOException {
     return eventAuditLogService
         .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
-          return regenerateService
-              .performRegenerate(requestBody.getName(), userContext, currentUserPermissionEntry, auditRecordParameters);
+          if (StringUtils.isEmpty(requestBody.getName())) {
+            return regenerateService
+                .performRegenerateBySigner(requestBody.getSignedBy(), userContext,
+                    currentUserPermissionEntry, auditRecordParameters);
+          } else {
+            return regenerateService
+                .performRegenerateByName(requestBody.getName(), userContext,
+                    currentUserPermissionEntry, auditRecordParameters);
+          }
         }));
   }
 }
