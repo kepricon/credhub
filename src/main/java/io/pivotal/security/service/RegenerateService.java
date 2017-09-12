@@ -2,8 +2,11 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
@@ -32,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
@@ -123,8 +127,22 @@ public class RegenerateService {
 
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
-      this.performRegenerate(name, userContext, currentUserPermissionEntry,
-          auditRecordParameters);
+      CertificateCredential credential = (CertificateCredential) credentialDataService.findMostRecent(name);
+
+      CertificateCredentialValue certificateValue = generatorService.generateCertificate(
+          new CertificateParameters(credential.getParsedCertificate(), signerName));
+
+      credentialService.save(
+          credential.getName(),
+          credential.getCredentialType(),
+          certificateValue,
+          null,
+          newArrayList(),
+          true,
+          userContext,
+          currentUserPermissionEntry,
+          auditRecordParameters
+      );
     }
 
     results.setRegeneratedCredentials(credentialNamesSet);
