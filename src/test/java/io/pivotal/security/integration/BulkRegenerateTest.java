@@ -74,7 +74,6 @@ public class BulkRegenerateTest {
 
   @Before
   public void beforeEach() throws Exception {
-
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())

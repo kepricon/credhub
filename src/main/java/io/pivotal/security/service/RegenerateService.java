@@ -123,14 +123,8 @@ public class RegenerateService {
 
     BulkRegenerateResults results = new BulkRegenerateResults();
     List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
-    
+
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
-    for (String credentialName : credentialNamesSet) {
-      if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, PermissionOperation.WRITE)){
-        auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
-        throw new PermissionException("error.credential.invalid_access");
-      }
-    }
     for (String name : credentialNamesSet) {
       this.performRegenerate(name, userContext, currentUserPermissionEntry,
           auditRecordParameters);
