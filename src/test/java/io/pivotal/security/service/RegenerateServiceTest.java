@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
@@ -9,6 +10,7 @@ import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.RsaCredential;
@@ -73,7 +75,7 @@ public class RegenerateServiceTest {
     permissionService = mock(PermissionService.class);
 
     subject = new RegenerateService(credentialDataService, credentialService,
-        generatorService, permissionService);
+        generatorService, permissionService, mock(Encryptor.class));
   }
 
   @Test
@@ -297,8 +299,7 @@ public class RegenerateServiceTest {
 
     when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
 
-    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
-        mock(PermissionEntry.class), new ArrayList<>());
+    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class), new ArrayList<>());
 
     verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
         StringGenerationParameters.class), anyList(), eq(true), any(UserContext.class), any(PermissionEntry.class), anyList());
@@ -309,6 +310,7 @@ public class RegenerateServiceTest {
     when(credentialDataService.findAllCertificateCredentialsByCaName("/some-signer-name")).thenReturn(
         Arrays.asList("cert1", "cert1", "cert1"));
     when(permissionService.hasPermission(any(), eq("/some-signer-name"), eq(PermissionOperation.READ))).thenReturn(true);
+    when(permissionService.hasPermission(any(), any(), eq(PermissionOperation.WRITE))).thenReturn(true);
 
     CertificateCredential credential = mock(CertificateCredential.class);
     when(credential.getCredentialType()).thenReturn("certificate");
@@ -318,10 +320,11 @@ public class RegenerateServiceTest {
     when(credential.getName()).thenReturn("cert1");
     when(reader.isValid()).thenReturn(true);
 
+    when(generatorService.generateCertificate(any())).thenReturn(new CertificateCredentialValue(credential.getCa(), credential.getCertificate(), credential.getPrivateKey(), credential.getCaName()));
+
     when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
 
-    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
-        mock(PermissionEntry.class), new ArrayList<>());
+    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class), new ArrayList<>());
 
     verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
         StringGenerationParameters.class), anyList(), eq(true), any(UserContext.class), any(PermissionEntry.class), anyList());
@@ -339,6 +342,6 @@ public class RegenerateServiceTest {
 
     thrown.expect(PermissionException.class);
     thrown.expectMessage("error.credential.invalid_access");
-    subject.performBulkRegenerate(caName, userContext, mock(PermissionEntry.class), newArrayList());
+    subject.performBulkRegenerate(caName, userContext, newArrayList());
   }
 }

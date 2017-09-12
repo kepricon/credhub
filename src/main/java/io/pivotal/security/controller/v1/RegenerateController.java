@@ -73,7 +73,7 @@ public class RegenerateController {
         .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
           return regenerateService
               .performBulkRegenerate(requestBody.getSignedBy(), userContext,
-                  currentUserPermissionEntry, auditRecordParameters);
+                  auditRecordParameters);
         }));
   }
 }

@@ -38,6 +38,10 @@ public class CertificateCredential extends Credential<CertificateCredential> {
       this.parsedCertificate = new CertificateReader(certificate.getCertificate());
     }
   }
+//
+//  public static CertificateCredential fromExisting() {
+//
+//  }
 
   public CertificateReader getParsedCertificate() {
     return this.parsedCertificate;

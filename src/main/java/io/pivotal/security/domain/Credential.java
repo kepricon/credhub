@@ -54,7 +54,7 @@ public abstract class Credential<Z extends Credential> {
     return delegate.getCredentialName();
   }
 
-  protected void copyNameReferenceFrom(Credential credential) {
+  public void copyNameReferenceFrom(Credential credential) {
     this.delegate.setCredentialName(credential.delegate.getCredentialName());
   }
 

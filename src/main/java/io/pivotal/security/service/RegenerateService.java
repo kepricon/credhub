@@ -9,6 +9,7 @@ import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialValueFactory;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
@@ -35,8 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
 
 @Service
 public class RegenerateService {
@@ -46,16 +47,18 @@ public class RegenerateService {
   private CredentialService credentialService;
   private GeneratorService generatorService;
   private final PermissionService permissionService;
+  private final Encryptor encryptor;
 
   RegenerateService(
       CredentialDataService credentialDataService,
       CredentialService credentialService,
       GeneratorService generatorService,
-      PermissionService permissionService) {
+      PermissionService permissionService, Encryptor encryptor) {
     this.credentialDataService = credentialDataService;
     this.credentialService = credentialService;
     this.generatorService = generatorService;
     this.permissionService = permissionService;
+    this.encryptor = encryptor;
 
     this.regeneratableTypes = new HashMap<>();
     this.regeneratableTypes.put("password", PasswordCredentialRegeneratable::new);
@@ -115,7 +118,6 @@ public class RegenerateService {
   public BulkRegenerateResults performBulkRegenerate(
       String signerName,
       UserContext userContext,
-      PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     if (!permissionService.hasPermission(userContext.getAclUser(), signerName, PermissionOperation.READ)) {
@@ -123,6 +125,7 @@ public class RegenerateService {
     }
 
     BulkRegenerateResults results = new BulkRegenerateResults();
+
     List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
 
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
@@ -131,18 +134,18 @@ public class RegenerateService {
 
       CertificateCredentialValue certificateValue = generatorService.generateCertificate(
           new CertificateParameters(credential.getParsedCertificate(), signerName));
+      String credentialName = credential.getName();
 
-      credentialService.save(
-          credential.getName(),
-          credential.getCredentialType(),
-          certificateValue,
-          null,
-          newArrayList(),
-          true,
-          userContext,
-          currentUserPermissionEntry,
-          auditRecordParameters
-      );
+      auditRecordParameters
+          .add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
+
+      if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
+        throw new PermissionException("error.credential.invalid_access");
+      }
+
+      CertificateCredential newVersion = new CertificateCredential(certificateValue, encryptor);
+      newVersion.copyNameReferenceFrom(credential);
+      credentialDataService.save(newVersion);
     }
 
     results.setRegeneratedCredentials(credentialNamesSet);
