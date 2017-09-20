@@ -15,7 +15,20 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
 
-import static io.pivotal.security.request.CertificateGenerationParameters.*;
+import static io.pivotal.security.request.CertificateGenerationParameters.CLIENT_AUTH;
+import static io.pivotal.security.request.CertificateGenerationParameters.CODE_SIGNING;
+import static io.pivotal.security.request.CertificateGenerationParameters.CRL_SIGN;
+import static io.pivotal.security.request.CertificateGenerationParameters.DATA_ENCIPHERMENT;
+import static io.pivotal.security.request.CertificateGenerationParameters.DECIPHER_ONLY;
+import static io.pivotal.security.request.CertificateGenerationParameters.DIGITAL_SIGNATURE;
+import static io.pivotal.security.request.CertificateGenerationParameters.EMAIL_PROTECTION;
+import static io.pivotal.security.request.CertificateGenerationParameters.ENCIPHER_ONLY;
+import static io.pivotal.security.request.CertificateGenerationParameters.KEY_AGREEMENT;
+import static io.pivotal.security.request.CertificateGenerationParameters.KEY_CERT_SIGN;
+import static io.pivotal.security.request.CertificateGenerationParameters.KEY_ENCIPHERMENT;
+import static io.pivotal.security.request.CertificateGenerationParameters.NON_REPUDIATION;
+import static io.pivotal.security.request.CertificateGenerationParameters.SERVER_AUTH;
+import static io.pivotal.security.request.CertificateGenerationParameters.TIMESTAMPING;
 
 public class CertificateParameters {
 
