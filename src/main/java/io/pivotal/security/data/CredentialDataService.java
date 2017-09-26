@@ -1,5 +1,7 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.constants.CredentialType;
+import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.entity.CredentialData;
@@ -108,8 +110,20 @@ public class CredentialDataService {
     if (credentialName == null) {
       return null;
     } else {
-      return credentialFactory.makeCredentialFromEntity(credentialRepository
+      final Credential credential = credentialFactory.makeCredentialFromEntity(credentialRepository
           .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()));
+      if (CredentialType.valueOf(credential.getCredentialType()).equals(CredentialType.certificate)) {
+        final List<Credential> CAs = this.findAllByName(((CertificateCredential) credential).getCaName());
+        if (CAs.size() > 1) {
+          final String stackedCAs = CAs.subList(0, 2)
+              .stream()
+              .map(cred -> ((CertificateCredential) cred).getCertificate())
+              .reduce((ca1, ca2) -> ca1 + ca2)
+              .get();
+          ((CertificateCredential) credential).setCa(stackedCAs);
+        }
+      }
+      return credential;
     }
   }
 
