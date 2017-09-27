@@ -22,6 +22,7 @@ import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
+import io.pivotal.security.view.FindByCaResults;
 import io.pivotal.security.view.FindCredentialResult;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
@@ -184,6 +185,16 @@ public class CredentialsController {
 
       return DataResponse.fromEntity(credentials);
     });
+  }
+
+  @GetMapping(path = "", params = "signed_by")
+  @ResponseStatus(HttpStatus.OK)
+  public FindByCaResults getCredentialByCaName(
+      @RequestParam(value = "signed_by") String caName) {
+
+    FindByCaResults credentials = credentialsHandler.getCredentialsByCaName(caName);
+    return credentials;
+
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)

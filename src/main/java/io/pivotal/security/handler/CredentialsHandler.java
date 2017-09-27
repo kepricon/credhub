@@ -8,9 +8,11 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.view.FindByCaResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static io.pivotal.security.request.PermissionOperation.DELETE;
@@ -111,5 +113,17 @@ public class CredentialsHandler {
     }
 
     return credential;
+  }
+
+  public FindByCaResults getCredentialsByCaName(
+      String signerName
+  ) {
+    FindByCaResults results = new FindByCaResults();
+    List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
+
+    final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
+
+    results.setCredentials(credentialNamesSet);
+    return results;
   }
 }

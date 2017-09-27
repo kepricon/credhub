@@ -7,6 +7,7 @@ import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,15 +26,19 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.List;
 
 import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -58,15 +63,14 @@ public class CertificateGenerationTest {
         .build();
   }
 
-  @Test
-  public void certificateGeneration_shouldGenerateCorrectCertificate() throws Exception {
+  private String createCaPost(String name) throws Exception{
     MockHttpServletRequestBuilder caPost = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"name\" : \"picard\",\n"
+            + "  \"name\" : \"" + name + "\",\n"
             + "  \"type\" : \"certificate\",\n"
             + "  \"parameters\" : {\n"
             + "    \"common_name\" : \"federation\",\n"
@@ -75,33 +79,42 @@ public class CertificateGenerationTest {
             + "  }\n"
             + "}");
 
-    String caResult = this.mockMvc.perform(caPost)
+    return this.mockMvc.perform(caPost)
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
+  }
 
-    String ca = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
-
-    assertThat(ca, notNullValue());
-
+  private String createCertificatePost(String name, String ca) throws Exception{
     MockHttpServletRequestBuilder certPost = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"name\" : \"riker\",\n"
+            + "  \"name\" : \"" + name + "\",\n"
             + "  \"type\" : \"certificate\",\n"
             + "  \"parameters\" : {\n"
             + "    \"common_name\" : \"federation\",\n"
-            + "    \"ca\" : \"picard\"\n"
+            + "    \"ca\" : \"" + ca + "\"\n"
             + "  }\n"
             + "}");
 
-    String certResult = this.mockMvc.perform(certPost)
+    return this.mockMvc.perform(certPost)
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
+  }
+
+  @Test
+  public void certificateGeneration_shouldGenerateCorrectCertificate() throws Exception {
+    String caResult = createCaPost("picard");
+
+    String ca = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
+
+    assertThat(ca, notNullValue());
+
+    String certResult = createCertificatePost("riker", "picard");
 
     String certCa = (new JSONObject(certResult)).getJSONObject("value").getString("ca");
     String cert = (new JSONObject(certResult)).getJSONObject("value").getString("certificate");
@@ -125,6 +138,27 @@ public class CertificateGenerationTest {
 
     assertThat(subjectKeyId, equalTo(authKeyId));
   }
+
+  @Test
+  public void findByCa_returnsTheNamesOfCertificatesSignedByThatCa() throws Exception{
+    createCaPost("picard");
+    createCertificatePost("riker", "picard");
+    createCertificatePost("another_certificate", "picard");
+
+    MockHttpServletRequestBuilder request = get("/api/v1/data?signed_by=" + "picard")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String caResult = this.mockMvc.perform(request).andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    final JSONArray credentials = (new JSONObject(caResult)).getJSONArray("credentials");
+    final List<String> result = Arrays
+        .asList(credentials.getString(0), credentials.getString(1));
+    assertThat(result, containsInAnyOrder("/riker", "/another_certificate"));
+  }
+
 
   @Test
   public void certificateGeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
