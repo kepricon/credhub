@@ -164,18 +164,18 @@ public class CredentialDataService {
   }
 
   public Long countAllNotEncryptedByActiveKey() {
-    return credentialRepository.countByEncryptionKeyUuidNot(
+    return credentialRepository.countByEncryptedCredentialValueEncryptionKeyUuidNot(
         encryptionKeyCanaryMapper.getActiveUuid()
     );
   }
 
   public Long countEncryptedWithKeyUuidIn(List<UUID> uuids) {
-    return credentialRepository.countByEncryptionKeyUuidIn(uuids);
+    return credentialRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids);
   }
 
   public Slice<Credential> findEncryptedWithAvailableInactiveKey() {
     final Slice<CredentialData> credentialDataSlice = credentialRepository
-        .findByEncryptionKeyUuidIn(
+        .findByEncryptedCredentialValueEncryptionKeyUuidIn(
             encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
             new PageRequest(0, BATCH_SIZE)
         );
