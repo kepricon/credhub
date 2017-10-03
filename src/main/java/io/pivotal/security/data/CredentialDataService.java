@@ -55,7 +55,7 @@ public class CredentialDataService {
   }
 
   public <Z extends Credential> Z save(CredentialData credentialData) {
-    if (credentialData.getEncryptionKeyUuid() == null) {
+    if (credentialData.getEncryptionKeyUuid() == null && credentialData.getEncryptedValue() != null) {
       credentialData.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
 

@@ -64,8 +64,9 @@ public class CertificateCredential extends Credential<CertificateCredential> {
   }
 
   public CertificateCredential setPrivateKey(String privateKey) {
-    super.setValue(privateKey);
-
+    if (privateKey != null) {
+      super.setValue(privateKey);
+    }
     return this;
   }
 

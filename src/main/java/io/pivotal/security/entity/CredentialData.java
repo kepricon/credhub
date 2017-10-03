@@ -1,7 +1,10 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.InstantMillisecondsConverter;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -43,6 +46,7 @@ public abstract class CredentialData<Z extends CredentialData> {
   private UUID uuid;
 
   @OneToOne(cascade = CascadeType.ALL)
+  @NotFound(action = NotFoundAction.IGNORE)
   @JoinColumn(name = "encrypted_value_uuid")
   private EncryptedValue encryptedCredentialValue;
 
@@ -60,10 +64,6 @@ public abstract class CredentialData<Z extends CredentialData> {
       this.credentialName.setName(name.getName());
     } else {
       setCredentialName(name);
-    }
-
-    if (this.encryptedCredentialValue == null) {
-      this.encryptedCredentialValue = new EncryptedValue();
     }
   }
 
@@ -93,19 +93,35 @@ public abstract class CredentialData<Z extends CredentialData> {
   }
 
   public byte[] getEncryptedValue() {
-    return encryptedCredentialValue.getEncryptedValue();
+    return encryptedCredentialValue !=null ? encryptedCredentialValue.getEncryptedValue() : null;
+  }
+
+  public Z setValuesFromEncryption(Encryption encryptedValue){
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
+    encryptedCredentialValue.setNonce(encryptedValue.nonce);
+    encryptedCredentialValue.setEncryptionKeyUuid(encryptedValue.canaryUuid);
+    encryptedCredentialValue.setEncryptedValue(encryptedValue.encryptedValue);
+    return (Z) this;
   }
 
   public Z setEncryptedValue(byte[] encryptedValue) {
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
     this.encryptedCredentialValue.setEncryptedValue(encryptedValue);
     return (Z) this;
   }
 
   public byte[] getNonce() {
-    return this.encryptedCredentialValue.getNonce();
+    return encryptedCredentialValue !=null ? this.encryptedCredentialValue.getNonce() : null;
   }
 
   public Z setNonce(byte[] nonce) {
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
     this.encryptedCredentialValue.setNonce(nonce);
     return (Z) this;
   }
@@ -113,10 +129,13 @@ public abstract class CredentialData<Z extends CredentialData> {
   public abstract String getCredentialType();
 
   public UUID getEncryptionKeyUuid() {
-    return encryptedCredentialValue.getEncryptionKeyUuid();
+    return encryptedCredentialValue != null ? encryptedCredentialValue.getEncryptionKeyUuid() : null;
   }
 
   public Z setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
     this.encryptedCredentialValue.setEncryptionKeyUuid(encryptionKeyUuid);
     return (Z) this;
   }

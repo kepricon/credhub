@@ -44,6 +44,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -129,6 +130,7 @@ public class CredentialDataServiceTest {
     PasswordCredentialData passwordCredentialData = new PasswordCredentialData("/my-credential-2");
     passwordCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     passwordCredentialData.setEncryptedValue("credential-password".getBytes());
+    passwordCredentialData.setNonce("nonce".getBytes());
     PasswordCredential credential = new PasswordCredential(passwordCredentialData);
 
     subject.save(credential);
@@ -198,12 +200,21 @@ public class CredentialDataServiceTest {
   }
 
   @Test
-  public void save_whenTheCredentialSavedWithoutAnEncryptedValueSet_setsTheMasterEncryptionKeyUuid() {
+  public void save_whenTheCredentialSavedWithEncryptedValueSet_setsTheMasterEncryptionKeyUuid() {
     SshCredentialData sshCredentialData = new SshCredentialData("/my-credential");
     SshCredential credential = new SshCredential(sshCredentialData).setEncryptor(encryptor).setPrivateKey("private-key").setPublicKey("fake-public-key");
     subject.save(credential);
 
     assertThat(sshCredentialData.getEncryptionKeyUuid(), equalTo(activeCanaryUuid));
+  }
+
+  @Test
+  public void save_whenTheCredentialSavedWithoutEncryptedValueSet_doesNotSetTheMasterEncryptionKeyUuid() {
+    SshCredentialData sshCredentialData = new SshCredentialData("/my-credential");
+    SshCredential credential = new SshCredential(sshCredentialData).setEncryptor(encryptor).setPublicKey("fake-public-key");
+    subject.save(credential);
+
+    assertThat(sshCredentialData.getEncryptionKeyUuid(), nullValue());
   }
 
   @Test
@@ -222,12 +233,14 @@ public class CredentialDataServiceTest {
     credentialData.setCredentialName(credentialName);
     credentialData.setEncryptionKeyUuid(activeCanaryUuid);
     credentialData.setEncryptedValue("credential-password".getBytes());
+    credentialData.setNonce("nonce".getBytes());
     subject.save(credentialData);
 
     credentialData = new PasswordCredentialData("/my-credential");
     credentialData.setCredentialName(credentialName);
     credentialData.setEncryptionKeyUuid(activeCanaryUuid);
     credentialData.setEncryptedValue("another password".getBytes());
+    credentialData.setNonce("nonce".getBytes());
     subject.save(credentialData);
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(2));
@@ -270,6 +283,7 @@ public class CredentialDataServiceTest {
     PasswordCredentialData passwordCredentialData = new PasswordCredentialData("/my/credential");
     passwordCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     passwordCredentialData.setEncryptedValue("credential-password".getBytes());
+    passwordCredentialData.setNonce("nonce".getBytes());
     PasswordCredential credential = new PasswordCredential(passwordCredentialData);
     subject.save(credential);
 
@@ -315,6 +329,7 @@ public class CredentialDataServiceTest {
     PasswordCredentialData passwordCredentialData = new PasswordCredentialData("/my-credential");
     passwordCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     passwordCredentialData.setEncryptedValue("credential-password".getBytes());
+    passwordCredentialData.setNonce("nonce".getBytes());
     PasswordCredential credential = new PasswordCredential(passwordCredentialData);
     PasswordCredential savedCredential = subject.save(credential);
 
@@ -340,7 +355,9 @@ public class CredentialDataServiceTest {
         hasProperty("name", equalTo(passwordName))));
 
     ValueCredential valueCredential = (ValueCredential) subject.findMostRecent("value.Credential");
+    valueCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     valueCredentialData.setEncryptedValue("new-encrypted-value".getBytes());
+    valueCredentialData.setNonce("nonce".getBytes());
     subject.save(valueCredential);
 
     assertThat("The credentials are ordered by versionCreatedAt",
@@ -442,23 +459,19 @@ public class CredentialDataServiceTest {
     String certificateName = "/certif/ic/ateCredential";
 
     ValueCredentialData valueCredentialData = new ValueCredentialData(valueOther);
-    valueCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     ValueCredential valueCredential = new ValueCredential(valueCredentialData);
     subject.save(valueCredential);
 
     valueCredentialData = new ValueCredentialData(valueName);
-    valueCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     valueCredential = new ValueCredential(valueCredentialData);
     subject.save(valueCredential);
 
     PasswordCredentialData passwordCredentialData = new PasswordCredentialData(passwordName);
-    passwordCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     PasswordCredential passwordCredential = new PasswordCredential(passwordCredentialData);
     subject.save(passwordCredential);
 
     CertificateCredentialData certificateCredentialData =
         new CertificateCredentialData(certificateName);
-    certificateCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     CertificateCredential certificateCredential = new CertificateCredential(
         certificateCredentialData);
     subject.save(certificateCredential);
@@ -696,7 +709,6 @@ public class CredentialDataServiceTest {
 
     CertificateCredentialData certificateCredentialData = new CertificateCredentialData(
         "/myseecret");
-    passwordCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     CertificateCredential certificateCredential = new CertificateCredential(
         certificateCredentialData);
     subject.save(certificateCredential);
@@ -704,7 +716,6 @@ public class CredentialDataServiceTest {
     fakeTimeSetter.accept(3000000000123L);
     certificateCredentialData = new CertificateCredentialData(
         certificateName);
-    certificateCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
     certificateCredential = new CertificateCredential(certificateCredentialData);
     subject.save(certificateCredential);
   }

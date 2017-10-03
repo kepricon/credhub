@@ -30,10 +30,7 @@ public abstract class Credential<Z extends Credential> {
 
   public Z setValue(String value) {
     final Encryption encryption = encryptor.encrypt(value);
-    delegate.setEncryptedValue(encryption.encryptedValue);
-    delegate.setNonce(encryption.nonce);
-    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
-
+    delegate.setValuesFromEncryption(encryption);
     return (Z) this;
   }
 
