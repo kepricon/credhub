@@ -57,14 +57,6 @@ public class EncryptedValue {
     this.uuid = uuid;
   }
 
-  public Instant getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public void setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
-  }
-
   public UUID getEncryptionKeyUuid() {
     return encryptionKeyUuid;
   }

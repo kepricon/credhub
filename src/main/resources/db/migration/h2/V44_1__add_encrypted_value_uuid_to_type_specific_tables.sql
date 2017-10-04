@@ -22,11 +22,3 @@ ALTER TABLE user_credential
   FOREIGN KEY(password_parameters_uuid)
   REFERENCES encrypted_value(uuid);
 
-ALTER TABLE credential_version
-  DROP COLUMN updated_at;
-ALTER TABLE credential_version
-  DROP COLUMN nonce;
-ALTER TABLE credential_version
-  DROP COLUMN encryption_key_uuid;
-ALTER TABLE credential_version
-  DROP COLUMN encrypted_value;
