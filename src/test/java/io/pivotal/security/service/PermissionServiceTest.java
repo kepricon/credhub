@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +74,25 @@ public class PermissionServiceTest {
     subject.saveAccessControlEntries(userContext, expectedCredential, expectedEntries);
 
     verify(permissionsDataService).saveAccessControlEntries(expectedCredential, expectedEntries);
+  }
+
+  @Test
+  public void saveAccessControlEntries_whenCredentialHasACEs_shouldCallVerifyAclWritePermission() {
+    ArrayList<PermissionEntry> entries = newArrayList();
+    entries.add(new PermissionEntry());
+
+    subject.saveAccessControlEntries(userContext, expectedCredential, entries);
+
+    verify(permissionCheckingService).hasPermission(USER_NAME, CREDENTIAL_NAME, WRITE_ACL);
+  }
+
+  @Test
+  public void saveAccessControlEntries_whenCredentialHasNoACEs_shouldCallVerifyAclWritePermission() {
+    ArrayList<PermissionEntry> entries = newArrayList();
+
+    subject.saveAccessControlEntries(userContext, expectedCredential, entries);
+
+    verify(permissionCheckingService, never()).hasPermission(USER_NAME, CREDENTIAL_NAME, WRITE_ACL);
   }
 
   @Test

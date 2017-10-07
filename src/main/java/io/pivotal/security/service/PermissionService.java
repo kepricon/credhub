@@ -32,6 +32,9 @@ public class PermissionService {
   }
 
   public void saveAccessControlEntries(UserContext userContext, Credential credential, List<PermissionEntry> permissionEntryList) {
+    if (permissionEntryList.size() == 0) {
+      return;
+    }
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credential.getName(), WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");

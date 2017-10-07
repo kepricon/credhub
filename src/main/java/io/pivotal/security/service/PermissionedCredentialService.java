@@ -6,9 +6,8 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.CredentialFactory;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -34,9 +33,8 @@ import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 
 @Service
 public class PermissionedCredentialService {
-
   private final CredentialVersionDataService credentialVersionDataService;
-  private final PermissionsDataService permissionsDataService;
+
   private PermissionService permissionService;
   private final CredentialFactory credentialFactory;
   private PermissionCheckingService permissionCheckingService;
@@ -44,12 +42,10 @@ public class PermissionedCredentialService {
   @Autowired
   public PermissionedCredentialService(
       CredentialVersionDataService credentialVersionDataService,
-      PermissionsDataService permissionsDataService,
       PermissionService permissionService,
       CredentialFactory credentialFactory,
       PermissionCheckingService permissionCheckingService) {
     this.credentialVersionDataService = credentialVersionDataService;
-    this.permissionsDataService = permissionsDataService;
     this.permissionService = permissionService;
     this.credentialFactory = credentialFactory;
     this.permissionCheckingService = permissionCheckingService;
@@ -93,7 +89,7 @@ public class PermissionedCredentialService {
       }
     }
 
-    CredentialVersion storedCredentialVersionVersion = existingCredentialVersion;
+    CredentialVersion credentialVersionToStore = existingCredentialVersion;
     if (shouldWriteNewEntity) {
       if (existingCredentialVersion == null) {
         accessControlEntries.add(currentUserPermissionEntry);
@@ -105,19 +101,20 @@ public class PermissionedCredentialService {
           credentialValue,
           existingCredentialVersion,
           generationParameters);
-      storedCredentialVersionVersion = credentialVersionDataService.save(newVersion);
+      credentialVersionToStore = credentialVersionDataService.save(newVersion);
 
-      permissionsDataService.saveAccessControlEntries(
-          storedCredentialVersionVersion.getCredentialName(),
+      permissionService.saveAccessControlEntries(
+          userContext,
+          credentialVersionToStore.getCredential(),
           accessControlEntries);
       auditRecordParameters.addAll(createPermissionsEventAuditParameters(
           ACL_UPDATE,
-          storedCredentialVersionVersion.getName(),
+          credentialVersionToStore.getName(),
           accessControlEntries
       ));
     }
 
-    return CredentialView.fromEntity(storedCredentialVersionVersion);
+    return CredentialView.fromEntity(credentialVersionToStore);
   }
 
   private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
