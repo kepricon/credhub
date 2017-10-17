@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.InvalidCAException;
 import io.pivotal.security.exceptions.InvalidPermissionOperationException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.KeyNotFoundException;
@@ -147,6 +148,12 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidObjectException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
+    return constructError(exception.getMessage());
+  }
+
+  @ExceptionHandler(InvalidCAException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleInvalidCAException(InvalidCAException exception) {
     return constructError(exception.getMessage());
   }
 

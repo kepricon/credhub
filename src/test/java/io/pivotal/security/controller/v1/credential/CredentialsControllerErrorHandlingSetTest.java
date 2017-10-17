@@ -1,5 +1,6 @@
 package io.pivotal.security.controller.v1.credential;
 
+import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
@@ -8,6 +9,7 @@ import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,11 +27,14 @@ import org.springframework.web.context.WebApplicationContext;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
+import static io.pivotal.security.util.TestConstants.TEST_PRIVATE_KEY;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -386,6 +391,49 @@ public class CredentialsControllerErrorHandlingSetTest {
 
     mockMvc.perform(request)
         .andExpect(status().isNotFound())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
+
+  @Test
+  public void givenACertificateRequest_whenACertificateIsNotSignedByCaName_returns400() throws Exception {
+
+    String CA_NAME = "some-ca";
+
+    MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "\"type\":\"certificate\",\n"
+            + "\"name\": \"" + CA_NAME + "\",\n"
+            + "\"parameters\": {\"common_name\": \"some-common-name\", \"is_ca\": true}}");
+
+    mockMvc.perform(postRequest).andExpect(status().is2xxSuccessful());
+
+
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", CA_NAME)
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"some-name\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    final String expectedError = "The CA name provided is not the signer of the certificate.";
+
+    mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }

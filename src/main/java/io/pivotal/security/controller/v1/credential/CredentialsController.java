@@ -231,8 +231,9 @@ public class CredentialsController {
   }
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
-    return eventAuditLogService.auditEvents(auditRecordParameters ->
-        handlePutRequest(requestBody, auditRecordParameters));
+    return eventAuditLogService.auditEvents(auditRecordParameters -> {
+      return handlePutRequest(requestBody, auditRecordParameters);
+    });
   }
 
   private CredentialView handlePutRequest(

@@ -6,12 +6,14 @@ import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.exceptions.InvalidCAException;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CertificateSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.PermissionedCredentialService;
+import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +42,7 @@ public class SetHandler {
   public CredentialView handle(
       BaseCredentialSetRequest setRequest,
       List<EventAuditRecordParameters> auditRecordParameters
-  ) {
+  )  {
     StringGenerationParameters generationParameters = null;
     UserContext userContext = userContextHolder.getUserContext();
 
@@ -50,9 +52,20 @@ public class SetHandler {
       // fill in the ca value if it's one of ours
       CertificateCredentialValue certificateValue = ((CertificateSetRequest) setRequest).getCertificateValue();
 
-      String caName = certificateValue.getCaName();
-      if (caName != null) {
-        certificateValue.setCa(certificateAuthorityService.findMostRecent(caName).getCertificate());
+      String credentialNameOfCA = certificateValue.getCaName();
+      if (credentialNameOfCA != null) {
+
+
+        String certificateForCA = certificateAuthorityService.findMostRecent(credentialNameOfCA).getCertificate();
+        certificateValue.setCa(certificateForCA);
+
+        CertificateReader someCertReader = new CertificateReader(certificateValue.getCertificate());
+
+        if (!someCertReader.isSignedBy(certificateForCA)) {
+          throw new InvalidCAException("error.ca_does_not_match");
+        }
+
+
       }
     }
 

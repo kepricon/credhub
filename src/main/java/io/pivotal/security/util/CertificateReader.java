@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.security.InvalidKeyException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -99,6 +100,18 @@ public class CertificateReader {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  public boolean isSignedBy(String caPemString){
+    try {
+      PublicKey key = new CertificateReader(caPemString).certificate.getPublicKey();
+      certificate.verify(key);
+      return true;
+    } catch (SignatureException | InvalidKeyException e) {
+      return false;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
