@@ -16,7 +16,6 @@ apply plugin: "java"
 apply plugin: "idea"
 apply plugin: "org.springframework.boot"
 apply plugin: "org.owasp.dependencycheck"
-apply plugin: "jacoco"
 
 jar {
     baseName = "credhub"
@@ -68,28 +67,13 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.1"
+    gradleVersion = "4.2"
 }
 
 processResources {
     outputs.upToDateWhen { false }
 }
 
-jacoco {
-    toolVersion = "0.7.6.201602180812"
-}
-
-jacocoTestReport {
-    group = "Reporting"
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html {
-            enabled true
-            destination "${project.buildDir}/reports/jacoco"
-        }
-    }
-}
 
 bootRun {
     addResources = true
@@ -102,16 +86,10 @@ task cleanAndAssemble(dependsOn: ['clean', 'assemble'])
 assemble.mustRunAfter("clean")
 
 test {
-    jacoco {
-        append = false
-        destinationFile = file("${project.buildDir}/jacoco/jacocoTest.exec")
-        classDumpFile = file("${project.buildDir}/jacoco/classpathdumps")
-    }
     testLogging {
         events "passed", "failed", "skipped"
         exceptionFormat "full"
     }
-
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
     outputs.upToDateWhen { false }
