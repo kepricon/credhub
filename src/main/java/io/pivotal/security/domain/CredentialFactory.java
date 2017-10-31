@@ -71,8 +71,8 @@ public class CredentialFactory {
       String name,
       CredentialValue credentialValue,
       CredentialVersion existingCredentialVersion,
-      GenerationParameters passwordGenerationParameters
-  ) {
+      GenerationParameters passwordGenerationParameters,
+      boolean transitional) {
     CredentialVersion credentialVersion;
     switch (type) {
       case password:
@@ -111,6 +111,8 @@ public class CredentialFactory {
     } else {
       credentialVersion.copyNameReferenceFrom(existingCredentialVersion);
     }
+
+    credentialVersion.setTransitional(transitional);
 
     return credentialVersion;
   }

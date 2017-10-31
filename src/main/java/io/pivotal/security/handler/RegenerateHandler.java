@@ -31,6 +31,7 @@ public class RegenerateHandler {
 
   public CredentialView handleRegenerate(
       String credentialName,
+      boolean transitional,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
@@ -45,8 +46,8 @@ public class RegenerateHandler {
         generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
         generateRequest.getOverwriteMode(),
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        transitional);
 
     return CredentialView.fromEntity(credentialVersion);
   }
@@ -62,6 +63,7 @@ public class RegenerateHandler {
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
       this.handleRegenerate(name,
+          false,
           auditRecordParameters);
     }
 

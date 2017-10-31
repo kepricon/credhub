@@ -65,8 +65,8 @@ public class SetHandler {
         generationParameters,
         setRequest.getAdditionalPermissions(),
         setRequest.getOverwriteMode(),
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     final boolean isNewCredential = existingCredentialVersion == null;
 

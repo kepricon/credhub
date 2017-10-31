@@ -14,7 +14,7 @@ public class PasswordView extends CredentialView {
         passwordCredential.getUuid(),
         passwordCredential.getName(),
         passwordCredential.getCredentialType(),
-        new StringCredentialValue(passwordCredential.getPassword())
-    );
+        new StringCredentialValue(passwordCredential.getPassword()),
+        false);
   }
 }

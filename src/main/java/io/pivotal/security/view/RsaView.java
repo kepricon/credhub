@@ -14,7 +14,7 @@ public class RsaView extends CredentialView {
         rsaCredential.getUuid(),
         rsaCredential.getName(),
         rsaCredential.getCredentialType(),
-        new RsaCredentialValue(rsaCredential.getPublicKey(), rsaCredential.getPrivateKey())
-    );
+        new RsaCredentialValue(rsaCredential.getPublicKey(), rsaCredential.getPrivateKey()),
+        false);
   }
 }

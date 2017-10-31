@@ -21,15 +21,17 @@ public class CredentialView<T extends CredentialValue> {
   private String name;
   private String type;
   private T value;
+  private boolean transitional;
 
   CredentialView() { /* Jackson */ }
 
-  CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, T value) {
+  CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, T value, boolean transitional) {
     this.versionCreatedAt = versionCreatedAt;
     this.uuid = uuid;
     this.name = name;
     this.type = type;
     this.value = value;
+    this.transitional = transitional;
   }
 
   public static CredentialView fromEntity(CredentialVersion credentialVersion) {
@@ -77,5 +79,10 @@ public class CredentialView<T extends CredentialValue> {
   @JsonProperty("value")
   public Object getValue() {
     return value;
+  }
+
+  @JsonProperty("version_transitional")
+  public boolean isTransitional() {
+    return transitional;
   }
 }

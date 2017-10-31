@@ -74,7 +74,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             passwordValue,
             existingCredentialVersion,
-            generationParameters);
+            generationParameters, false);
     assertThat(credentialVersion.getCredential(), equalTo(existingCredentialVersion.getCredential()));
   }
 
@@ -88,7 +88,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             passwordValue,
             null,
-            generationParameters);
+            generationParameters, false);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getPassword(), equalTo(PLAINTEXT_VALUE));
     assertThat(credential.getGenerationParameters(), samePropertyValuesAs(generationParameters));
@@ -104,7 +104,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             passwordValue,
             null,
-            null);
+            null, false);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getValue(), equalTo(PLAINTEXT_VALUE));
   }
@@ -123,7 +123,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             certificateValue,
             null,
-            null);
+            null, false);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getCa(), equalTo("ca-certificate"));
     assertThat(credential.getCertificate(), equalTo("certificate"));
@@ -143,7 +143,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             rsaValue,
             null,
-            null);
+            null, false);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getPublicKey(), equalTo("public-key"));
     assertThat(credential.getPrivateKey(), equalTo(PLAINTEXT_VALUE));
@@ -162,7 +162,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             sshValue,
             null,
-            null);
+            null, false);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getPublicKey(), equalTo("public-key"));
     assertThat(credential.getPrivateKey(), equalTo(PLAINTEXT_VALUE));
@@ -178,7 +178,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             jsonValue,
             null,
-            null);
+            null, false);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getValue(), equalTo(jsonValueMap));
   }
@@ -193,7 +193,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             userValue,
             null,
-            generationParameters);
+            generationParameters, false);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getUsername(), equalTo("username"));
     assertThat(credential.getPassword(), equalTo(PLAINTEXT_VALUE));

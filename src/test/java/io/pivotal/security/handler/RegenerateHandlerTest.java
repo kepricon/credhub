@@ -1,8 +1,7 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.domain.CredentialVersion;
-import io.pivotal.security.domain.PasswordCredentialVersion;
+import io.pivotal.security.domain.*;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.PermissionedCredentialService;
@@ -47,6 +46,53 @@ public class RegenerateHandlerTest {
         generationRequestGenerator);
   }
 
+//  @Test
+//  public void handleRegenerate_passesTransitionalValueToCredentialService() throws Exception {
+//    getBouncyCastleProvider();
+//
+//    UUID canaryUuid = UUID.randomUUID();
+//    byte[] encryptedValue = "fake-encrypted-value".getBytes();
+//    byte[] nonce = "fake-nonce".getBytes();
+//
+//    Encryptor encryptor = mock(Encryptor.class);
+//    final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
+//    when(encryptor.encrypt("priv")).thenReturn(encryption);
+//    when(encryptor.decrypt(encryption)).thenReturn("priv");
+//
+//    String credentialName = "/foo";
+//    UUID uuid = UUID.randomUUID();
+//    CredentialVersion entity = new CertificateCredentialVersion(credentialName)
+//        .setEncryptor(encryptor)
+//        .setCa("ca")
+//        .setCertificate("cert")
+//        .setPrivateKey("priv")
+//        .setUuid(uuid);
+//
+//
+//    CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion)entity;
+//    CertificateReader reader = certificateCredential.getParsedCertificate();
+//
+//    CertificateGenerationParameters certificateGenerationParameters = new CertificateGenerationParameters(reader,
+//        certificateCredential.getCaName());
+//
+//    CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+//    generateRequest.setName("test-ca");
+//    generateRequest.setCertificateGenerationParameters(certificateGenerationParameters);
+//
+//
+//    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class), any(String.class), any(List.class)))
+//        .thenReturn(generateRequest);
+//
+//    when(credentialService.save(
+//        any(), eq("/test"),
+//        any(), any(), any(),
+//        any(), anyString(),
+//        any()))
+//      .thenReturn(entity);
+//
+//    subject.handleRegenerate("test", true, newArrayList());
+//  }
+
   @Test
   public void handleBulkRegenerate_regeneratesEverythingInTheList() throws Exception {
     when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))
@@ -54,7 +100,7 @@ public class RegenerateHandlerTest {
     when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(CredentialVersion.class));
     CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyList(), false)).thenReturn(credentialVersion);
 
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
     generateRequest1.setName("/firstExpectedName");
@@ -70,13 +116,13 @@ public class RegenerateHandlerTest {
         any(), eq("/firstExpectedName"),
         any(), any(), any(),
         any(), anyString(),
-        any());
+        any(), false);
 
     verify(credentialService).save(
         any(), eq("/secondExpectedName"),
         any(), any(), any(),
         any(), anyString(),
-        any());
+        any(), false);
 
   }
 

@@ -35,11 +35,7 @@ import java.time.Instant;
 import java.util.function.Consumer;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.RequestHelper.revokePermissions;
-import static io.pivotal.security.helper.RequestHelper.expect404WhileRegeneratingCertificate;
-import static io.pivotal.security.helper.RequestHelper.generateCa;
-import static io.pivotal.security.helper.RequestHelper.generateCertificate;
-import static io.pivotal.security.helper.RequestHelper.grantPermissions;
+import static io.pivotal.security.helper.RequestHelper.*;
 import static io.pivotal.security.helper.TestHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
@@ -241,6 +237,36 @@ public class CredentialRegenerateTest {
     assertThat(newUser.getUsername(), equalTo(originalCredential.getUsername()));
 
     auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/the-user", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
+  }
+
+  @Test
+  public void regeneratingACertificateWithTransitionalTrue_regeneratesTheCertificate_andPersistsATransitionalEntry() throws Exception {
+    generateCa(mockMvc, "test-cert", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+
+    MockHttpServletRequestBuilder request = post("/api/v1/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"name\":\"test-cert\", \"transitional\":true}");
+
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.version_transitional").value(true));
+  }
+
+  @Test
+  public void regeneratingACertificateWithTransitionalFalse_regeneratesTheCertificate_andPersistsATransitionalEntry() throws Exception {
+    generateCa(mockMvc, "test-cert", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+
+    MockHttpServletRequestBuilder request = post("/api/v1/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"name\":\"test-cert\", \"transitional\":false}");
+
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.version_transitional").value(false));
   }
 
   @Test

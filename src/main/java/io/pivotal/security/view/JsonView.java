@@ -14,7 +14,7 @@ public class JsonView extends CredentialView {
         jsonCredential.getUuid(),
         jsonCredential.getName(),
         jsonCredential.getCredentialType(),
-        new JsonCredentialValue(jsonCredential.getValue())
-    );
+        new JsonCredentialValue(jsonCredential.getValue()),
+        false);
   }
 }

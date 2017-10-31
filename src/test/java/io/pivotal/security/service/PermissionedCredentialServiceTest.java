@@ -124,8 +124,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
   }
 
   @Test
@@ -138,8 +138,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
@@ -158,8 +158,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "overwrite",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_UPDATE));
     assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
@@ -186,8 +186,8 @@ public class PermissionedCredentialServiceTest {
           generationParameters,
           accessControlEntries,
           "overwrite",
-          auditRecordParameters
-      );
+          auditRecordParameters,
+          false);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
     }
@@ -203,8 +203,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     verify(permissionCheckingService).hasPermission(userContext.getActor(),
         CREDENTIAL_NAME, WRITE);
@@ -221,8 +221,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
   }
 
   @Test
@@ -243,8 +243,8 @@ public class PermissionedCredentialServiceTest {
           generationParameters,
           accessControlEntries,
           "no-overwrite",
-          auditRecordParameters
-      );
+          auditRecordParameters,
+          false);
     } catch (PermissionException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
@@ -263,8 +263,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "overwrite",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     assertThat(accessControlEntries, hasSize(0));
   }
@@ -280,7 +280,7 @@ public class PermissionedCredentialServiceTest {
         CREDENTIAL_NAME,
         credentialValue,
         null,
-        generationParameters)).thenReturn(newVersion);
+        generationParameters, false)).thenReturn(newVersion);
 
     subject.save(
         null, CREDENTIAL_NAME,
@@ -289,8 +289,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "overwrite",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     verify(credentialVersionDataService).save(newVersion);
   }
@@ -466,7 +466,7 @@ public class PermissionedCredentialServiceTest {
         CREDENTIAL_NAME,
         credentialValue,
         originalCredentialVersion,
-        generationParameters)).thenReturn(newVersion);
+        generationParameters, false)).thenReturn(newVersion);
 
     subject.save(
         originalCredentialVersion, CREDENTIAL_NAME,
@@ -475,8 +475,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "converge",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     verify(credentialVersionDataService, never()).save(newVersion);
   }
@@ -498,7 +498,7 @@ public class PermissionedCredentialServiceTest {
         CREDENTIAL_NAME,
         credentialValue,
         originalCredentialVersion,
-        generationParameters)).thenReturn(newVersion);
+        generationParameters, false)).thenReturn(newVersion);
 
     subject.save(
         originalCredentialVersion, CREDENTIAL_NAME,
@@ -507,8 +507,8 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "converge",
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     verify(credentialVersionDataService).save(newVersion);
   }

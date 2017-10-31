@@ -14,7 +14,7 @@ public class ValueView extends CredentialView {
         valueCredential.getUuid(),
         valueCredential.getName(),
         valueCredential.getCredentialType(),
-        new StringCredentialValue((String) valueCredential.getValue())
-    );
+        new StringCredentialValue((String) valueCredential.getValue()),
+        false);
   }
 }

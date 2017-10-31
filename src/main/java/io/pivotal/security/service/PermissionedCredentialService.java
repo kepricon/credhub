@@ -62,8 +62,8 @@ public class PermissionedCredentialService {
       GenerationParameters generationParameters,
       List<PermissionEntry> accessControlEntries,
       String overwriteMode,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
+      List<EventAuditRecordParameters> auditRecordParameters,
+      boolean transitional) {
     final boolean isNewCredential = existingCredentialVersion == null;
 
     boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generationParameters, overwriteMode, isNewCredential);
@@ -81,8 +81,8 @@ public class PermissionedCredentialService {
         type,
         credentialValue,
         generationParameters,
-        existingCredentialVersion
-    );
+        existingCredentialVersion,
+        transitional);
   }
 
   public boolean delete(String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {
@@ -168,13 +168,13 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findMostRecent(credentialName);
   }
 
-  private CredentialVersion makeAndSaveNewCredential(String credentialName, String type, CredentialValue credentialValue, GenerationParameters generationParameters, CredentialVersion existingCredentialVersion) {
+  private CredentialVersion makeAndSaveNewCredential(String credentialName, String type, CredentialValue credentialValue, GenerationParameters generationParameters, CredentialVersion existingCredentialVersion, boolean transitional) {
     CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
         CredentialType.valueOf(type),
         credentialName,
         credentialValue,
         existingCredentialVersion,
-        generationParameters);
+        generationParameters, transitional);
     return credentialVersionDataService.save(newVersion);
   }
 

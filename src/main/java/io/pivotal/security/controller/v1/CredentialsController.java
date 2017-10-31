@@ -214,7 +214,7 @@ public class CredentialsController {
   ) throws IOException {
     CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
 
-    return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
+    return regenerateHandler.handleRegenerate(requestBody.getName(), false, auditRecordParameters);
   }
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {

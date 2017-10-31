@@ -42,8 +42,8 @@ public class GenerateHandler {
         generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
         generateRequest.getOverwriteMode(),
-        auditRecordParameters
-    );
+        auditRecordParameters,
+        false);
 
     final boolean isNewCredential = existingCredentialVersion == null;
 

@@ -15,7 +15,7 @@ public class SshView extends CredentialView {
         sshCredential.getName(),
         sshCredential.getCredentialType(),
         new SshCredentialValue(sshCredential.getPublicKey(), sshCredential.getPrivateKey(),
-            sshCredential.getFingerprint())
-    );
+            sshCredential.getFingerprint()),
+        false);
   }
 }

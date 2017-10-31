@@ -10,7 +10,7 @@ public class UserView extends CredentialView {
         userCredential.getUuid(),
         userCredential.getName(),
         userCredential.getCredentialType(),
-        new UserCredentialValue(userCredential.getUsername(), userCredential.getPassword(), userCredential.getSalt())
-    );
+        new UserCredentialValue(userCredential.getUsername(), userCredential.getPassword(), userCredential.getSalt()),
+        false);
   }
 }

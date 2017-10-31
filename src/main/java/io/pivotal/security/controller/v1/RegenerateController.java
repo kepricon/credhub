@@ -43,6 +43,7 @@ public class RegenerateController {
         .auditEvents((auditRecordParameters -> {
           return regenerateHandler
               .handleRegenerate(requestBody.getName(),
+                  requestBody.isTransitional(),
                   auditRecordParameters);
         }));
   }

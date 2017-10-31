@@ -80,4 +80,12 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
   }
 
   public abstract boolean matchesGenerationParameters(GenerationParameters generationParameters);
+
+  public void setTransitional(boolean transitional) {
+    delegate.setTransitional(transitional);
+  }
+
+  public boolean isTransitional() {
+    return delegate.isTransitional();
+  }
 }

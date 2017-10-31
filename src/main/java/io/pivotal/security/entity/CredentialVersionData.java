@@ -58,6 +58,9 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
   @JoinColumn(name = "credential_uuid", nullable = false)
   private Credential credential;
 
+  @Column(nullable = false)
+  private boolean transitional;
+
   public CredentialVersionData(Credential name) {
     if (this.credential != null) {
       this.credential.setName(name.getName());
@@ -116,6 +119,15 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
 
   public Z setVersionCreatedAt(Instant versionCreatedAt) {
     this.versionCreatedAt = versionCreatedAt;
+    return (Z) this;
+  }
+
+  public boolean isTransitional() {
+    return transitional;
+  }
+
+  public Z setTransitional(boolean transitional) {
+    this.transitional = transitional;
     return (Z) this;
   }
 }

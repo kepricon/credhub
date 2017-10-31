@@ -11,6 +11,7 @@ public class RegenerateRequest {
 
   @NotNull(message = "error.missing_name")
   private String name;
+  private boolean transitional;
 
   public RegenerateRequest() {
         /* this needs to be there for jackson to be happy */
@@ -26,5 +27,13 @@ public class RegenerateRequest {
 
   public void setName(String name) {
     this.name = StringUtils.prependIfMissing(name, "/");
+  }
+
+  public boolean isTransitional() {
+    return transitional;
+  }
+
+  public void setTransitional(boolean transitional) {
+    this.transitional = transitional;
   }
 }
