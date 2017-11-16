@@ -6,15 +6,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(JUnit4.class)
-public class BcEncryptionServiceTest {
+public class InternalEncryptionServiceTest {
   @Test
   public void createsPasswordBasedKeyProxy() throws Exception {
-    BcEncryptionService subject = new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl());
+    InternalEncryptionService subject = new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl());
 
     EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionPassword("foobar");

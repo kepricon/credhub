@@ -5,7 +5,6 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.CheckedConsumer;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -31,10 +30,9 @@ public class CryptoWrapper {
 
   @Autowired
   public CryptoWrapper(
-      BouncyCastleProvider bouncyCastleProvider,
       EncryptionService encryptionService
   ) throws NoSuchAlgorithmException {
-    keyFactory = KeyFactory.getInstance(ALGORITHM, bouncyCastleProvider);
+    keyFactory = KeyFactory.getInstance(ALGORITHM);
     secureRandom = encryptionService.getSecureRandom();
 
     initializeOpenssl();

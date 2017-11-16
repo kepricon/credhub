@@ -5,7 +5,6 @@ import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.exceptions.IncorrectKeyException;
 import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +15,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 
-import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,8 +30,7 @@ public class DefaultKeyProxyTest {
 
   @Before
   public void beforeEach() throws Exception {
-    final BcEncryptionService encryptionService = new BcEncryptionService(
-        getBouncyCastleProvider(),
+    final InternalEncryptionService encryptionService = new InternalEncryptionService(
         new PasswordKeyProxyFactoryTestImpl()
     );
     EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
@@ -54,14 +51,14 @@ public class DefaultKeyProxyTest {
 
   @Test
   public void isMatchingCanary_whenCanaryMatches_returnsTrue() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey, new BcEncryptionService(new BouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()));
+    subject = new DefaultKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
 
     assertThat(subject.matchesCanary(canary), equalTo(true));
   }
 
   @Test
   public void isMatchingCanary_usingOldCanaryValue_returnsTrue() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey, new BcEncryptionService(new BouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()));
+    subject = new DefaultKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
 
     assertThat(subject.matchesCanary(deprecatedCanary), equalTo(true));
   }
@@ -69,7 +66,7 @@ public class DefaultKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsRelevantIllegalBlockSizeException_returnsFalse() throws Exception {
     subject = new DefaultKeyProxy(encryptionKey,
-        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -83,7 +80,7 @@ public class DefaultKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsAEADBadTagException_returnsFalse() throws Exception {
     subject = new DefaultKeyProxy(encryptionKey,
-        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -97,7 +94,7 @@ public class DefaultKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsBadPaddingException_throwsIncorrectKeyException() throws Exception {
     subject = new DefaultKeyProxy(encryptionKey,
-        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -111,7 +108,7 @@ public class DefaultKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsIllegalBlockSizeException_throwsIncorrectKeyException() throws Exception {
     subject = new DefaultKeyProxy(encryptionKey,
-        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -125,7 +122,7 @@ public class DefaultKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsOtherException_throwsIncorrectKeyException() throws Exception {
     subject = new DefaultKeyProxy(encryptionKey,
-        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {

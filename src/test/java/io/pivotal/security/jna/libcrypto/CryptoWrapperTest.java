@@ -1,9 +1,8 @@
 package io.pivotal.security.jna.libcrypto;
 
 import com.sun.jna.Pointer;
-import io.pivotal.security.service.BcEncryptionService;
+import io.pivotal.security.service.InternalEncryptionService;
 import io.pivotal.security.service.PasswordKeyProxyFactory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,11 +11,9 @@ import org.junit.runners.JUnit4;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import javax.crypto.Cipher;
 
-import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static io.pivotal.security.jna.libcrypto.Crypto.RSA_PKCS1_PADDING;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -30,10 +27,9 @@ public class CryptoWrapperTest {
 
   @Before
   public void beforeEach() throws Exception {
-    BouncyCastleProvider bouncyCastleProvider = getBouncyCastleProvider();
-    BcEncryptionService encryptionService = new BcEncryptionService(bouncyCastleProvider, mock(PasswordKeyProxyFactory.class));
+    InternalEncryptionService encryptionService = new InternalEncryptionService(mock(PasswordKeyProxyFactory.class));
 
-    subject = new CryptoWrapper(bouncyCastleProvider, encryptionService);
+    subject = new CryptoWrapper(encryptionService);
   }
 
   @Test
@@ -61,29 +57,29 @@ public class CryptoWrapperTest {
   }
 
   @Test
-  public void canTransformRsaStructsIntoKeyPairs() throws GeneralSecurityException {
+  public void toKeyPair_canTransformRsaStructsIntoKeyPairs() throws GeneralSecurityException {
     subject.generateKeyPair(1024, rsa -> {
+      KeyPair keyPair = subject.toKeyPair(rsa);
       byte[] plaintext = new byte[117];
       byte[] message = "OpenSSL for speed".getBytes();
       System.arraycopy(message, 0, plaintext, 0, message.length);
 
-      byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
+      // extract the cipher text with Java
+      Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+      cipher.init(Cipher.ENCRYPT_MODE, keyPair.getPrivate());
+      byte[] javaCipherText = cipher.doFinal(plaintext);
+
+      // extract the cipher text with OpenSSL
+      byte[] openSSLCipherText = new byte[Crypto.RSA_size(rsa)];
       int result = Crypto
-          .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_PKCS1_PADDING);
+          .RSA_private_encrypt(plaintext.length, plaintext, openSSLCipherText, rsa, RSA_PKCS1_PADDING);
       if (result == -1) {
         System.out.println(subject.getError());
       }
       assert result >= 0;
 
-      KeyPair keyPair = subject.toKeyPair(rsa);
-      PrivateKey privateKey = keyPair.getPrivate();
-
-      Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", getBouncyCastleProvider());
-      cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-      byte[] javaCipherText = cipher.doFinal(plaintext);
-
       assertThat("Encryption should work the same inside and outside openssl", javaCipherText,
-          equalTo(ciphertext));
+          equalTo(openSSLCipherText));
     });
   }
 

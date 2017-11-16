@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.EncryptedValue;
-import io.pivotal.security.service.BcEncryptionService;
+import io.pivotal.security.service.InternalEncryptionService;
 import io.pivotal.security.service.BcNullConnection;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
@@ -11,11 +11,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.UUID;
+import javax.crypto.spec.SecretKeySpec;
 
-import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -42,8 +41,8 @@ public class EncryptorTest {
     newUuid = UUID.randomUUID();
 
     keyMapper = mock(EncryptionKeyCanaryMapper.class);
-    BcEncryptionService bcEncryptionService;
-    bcEncryptionService = new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl());
+    InternalEncryptionService internalEncryptionService;
+    internalEncryptionService = new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl());
 
     Key newKey = new SecretKeySpec(parseHexBinary("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"), 0, 16,
         "AES");
@@ -55,7 +54,7 @@ public class EncryptorTest {
     when(keyMapper.getKeyForUuid(newUuid)).thenReturn(newKey);
 
     RetryingEncryptionService encryptionService = new RetryingEncryptionService(
-        bcEncryptionService, keyMapper, new BcNullConnection());
+        internalEncryptionService, keyMapper, new BcNullConnection());
     subject = new Encryptor(encryptionService);
   }
 
