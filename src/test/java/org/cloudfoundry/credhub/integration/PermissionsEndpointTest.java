@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
@@ -71,7 +72,7 @@ public class PermissionsEndpointTest {
         .apply(springSecurity())
         .build();
 
-    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", "no-overwrite");
+    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", CredentialWriteMode.NO_OVERWRITE.mode);
 
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }

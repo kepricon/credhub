@@ -66,7 +66,7 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void whenTheTypeChanges_returns400() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "some password", "overwrite");
+    setPassword(mockMvc, CREDENTIAL_NAME, "some password", CredentialWriteMode.OVERWRITE.mode);
 
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

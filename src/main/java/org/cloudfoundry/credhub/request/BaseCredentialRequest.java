@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.request;
 
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -52,9 +53,9 @@ public abstract class BaseCredentialRequest {
       return mode;
     }
     if (isOverwrite()) {
-      return "overwrite";
+      return CredentialWriteMode.OVERWRITE.mode;
     }
-    return "no-overwrite";
+    return CredentialWriteMode.NO_OVERWRITE.mode;
   }
 
   public boolean isOverwrite() {
