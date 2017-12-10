@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;

@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import net.minidev.json.JSONObject;

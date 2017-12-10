@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.integration;
 
 import com.google.common.collect.ImmutableMap;
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;

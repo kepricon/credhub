@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.Before;

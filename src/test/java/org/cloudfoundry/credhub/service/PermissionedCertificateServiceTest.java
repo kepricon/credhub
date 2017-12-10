@@ -9,7 +9,6 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
-import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;

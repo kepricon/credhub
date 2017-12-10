@@ -28,7 +28,7 @@ public abstract class BaseCredentialRequest {
   private String name;
   private String type;
   private Boolean overwrite;
-  private String mode;
+  private CredentialWriteMode mode;
   private List<PermissionEntry> additionalPermissions = new ArrayList<>();
   private GenerationParameters generationParameters = null;
 
@@ -50,7 +50,7 @@ public abstract class BaseCredentialRequest {
 
   public String getOverwriteMode() {
     if (mode != null) {
-      return mode;
+      return mode.name();
     }
     if (isOverwrite()) {
       return CredentialWriteMode.OVERWRITE.mode;
@@ -98,11 +98,11 @@ public abstract class BaseCredentialRequest {
     }
   }
 
-  public String getMode() {
+  public CredentialWriteMode getMode() {
     return mode;
   }
 
-  public void setMode(String mode) {
+  public void setMode(CredentialWriteMode mode) {
     this.mode = mode;
   }
 
