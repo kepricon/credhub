@@ -9,6 +9,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
@@ -39,35 +40,29 @@ public class PermissionedCertificateService {
   }
 
   public CredentialVersion save(
-      CredentialVersion existingCredentialVersion, String credentialName,
-      CertificateCredentialValue credentialValue,
-      GenerationParameters generationParameters,
-      List<PermissionEntry> accessControlEntries,
-      String overwriteMode,
-      List<EventAuditRecordParameters> auditRecordParameters
+          CredentialVersion existingCredentialVersion,
+          CertificateCredentialValue credentialValue,
+          BaseCredentialGenerateRequest generateRequest,
+          List<EventAuditRecordParameters> auditRecordParameters
   ) {
+    generateRequest.setType( "certificate");
     if (credentialValue.isTransitional()) {
-
       List<CredentialVersion> credentialVersions = permissionedCredentialService
-          .findAllByName(credentialName, auditRecordParameters);
+              .findAllByName(generateRequest.getName(), auditRecordParameters);
 
       boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
-          .map(version -> (CertificateCredentialVersion) version)
-          .anyMatch(version -> version.isVersionTransitional());
+              .map(version -> (CertificateCredentialVersion) version)
+              .anyMatch(version -> version.isVersionTransitional());
 
       if (transitionalVersionsAlreadyExist) {
         throw new ParameterizedValidationException("error.too_many_transitional_versions");
       }
     }
     return permissionedCredentialService.save(
-        existingCredentialVersion,
-        credentialName,
-        "certificate",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        overwriteMode,
-        auditRecordParameters);
+            existingCredentialVersion,
+            credentialValue,
+            generateRequest,
+            auditRecordParameters);
   }
 
   public List<Credential> getAll(List<EventAuditRecordParameters> auditRecordParameters) {

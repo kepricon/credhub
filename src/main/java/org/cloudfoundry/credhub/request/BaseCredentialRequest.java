@@ -29,6 +29,7 @@ public abstract class BaseCredentialRequest {
   private Boolean overwrite;
   private String mode;
   private List<PermissionEntry> additionalPermissions = new ArrayList<>();
+  private GenerationParameters generationParameters = null;
 
   public String getType() {
     return type;
@@ -103,4 +104,9 @@ public abstract class BaseCredentialRequest {
   public void setMode(String mode) {
     this.mode = mode;
   }
+
+  public GenerationParameters getGenerationParameters() {
+    return generationParameters;
+  }
+
 }

@@ -43,12 +43,9 @@ public class SetHandler {
       BaseCredentialSetRequest setRequest,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    StringGenerationParameters generationParameters = null;
     UserContext userContext = userContextHolder.getUserContext();
 
-    if (setRequest instanceof PasswordSetRequest) {
-      generationParameters = ((PasswordSetRequest) setRequest).getGenerationParameters();
-    } else if (setRequest instanceof CertificateSetRequest) {
+    if (setRequest instanceof CertificateSetRequest) {
       // fill in the ca value if it's one of ours
       CertificateCredentialValue certificateValue = ((CertificateSetRequest) setRequest).getCertificateValue();
 
@@ -68,12 +65,9 @@ public class SetHandler {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(setRequest.getName());
 
     final CredentialVersion credentialVersion = credentialService.save(
-        existingCredentialVersion, setRequest.getName(),
-        setRequest.getType(),
+        existingCredentialVersion,
         setRequest.getCredentialValue(),
-        generationParameters,
-        setRequest.getAdditionalPermissions(),
-        setRequest.getOverwriteMode(),
+        setRequest,
         auditRecordParameters
     );
 

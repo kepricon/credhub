@@ -36,12 +36,9 @@ public class GenerateHandler {
     CredentialValue value = credentialGenerator.generate(generateRequest);
 
     final CredentialVersion credentialVersion = credentialService.save(
-        existingCredentialVersion, generateRequest.getName(),
-        generateRequest.getType(),
+        existingCredentialVersion,
         value,
-        generateRequest.getGenerationParameters(),
-        generateRequest.getAdditionalPermissions(),
-        generateRequest.getOverwriteMode(),
+        generateRequest,
         auditRecordParameters
     );
 

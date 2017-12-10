@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.junit.Before;
@@ -46,22 +47,18 @@ public class PermissionedCertificateServiceTest {
   public void save_whenTransitionalIsFalse_delegatesToPermissionedCredentialService() throws Exception {
     CertificateCredentialValue value = mock(CertificateCredentialValue.class);
     when(value.isTransitional()).thenReturn(false);
+    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     subject.save(
         mock(CredentialVersion.class),
-        "/some-name",
         value,
-        mock(GenerationParameters.class),
-        newArrayList(),
-        "overwrite",
+        generateRequest,
         newArrayList()
     );
+
+    Mockito.verify(generateRequest).setType(eq("certificate"));
     Mockito.verify(permissionedCredentialService).save(any(),
-        eq("/some-name"),
-        eq("certificate"),
         eq(value),
-        any(),
-        any(),
-        eq("overwrite"),
+        eq(generateRequest),
         any()
     );
   }
@@ -71,6 +68,9 @@ public class PermissionedCertificateServiceTest {
     CertificateCredentialValue value = mock(CertificateCredentialValue.class);
     when(value.isTransitional()).thenReturn(true);
 
+    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    when(generateRequest.getName()).thenReturn("/some-name");
+
     CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(false);
 
@@ -79,20 +79,15 @@ public class PermissionedCertificateServiceTest {
 
     subject.save(
         mock(CredentialVersion.class),
-        "/some-name",
         value,
-        mock(GenerationParameters.class),
-        newArrayList(),
-        "overwrite",
+        generateRequest,
         newArrayList()
     );
+
+    Mockito.verify(generateRequest).setType(eq("certificate"));
     Mockito.verify(permissionedCredentialService).save(any(),
-        eq("/some-name"),
-        eq("certificate"),
         eq(value),
-        any(),
-        any(),
-        eq("overwrite"),
+        eq(generateRequest),
         any()
     );
   }
@@ -101,6 +96,9 @@ public class PermissionedCertificateServiceTest {
   public void save_whenTransitionalIsTrue_AndThereIsAnotherTransitionalVersion_throwsAnException() throws Exception {
     CertificateCredentialValue value = mock(CertificateCredentialValue.class);
     when(value.isTransitional()).thenReturn(true);
+
+    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    when(generateRequest.getName()).thenReturn("/some-name");
 
     CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(true);
@@ -111,11 +109,8 @@ public class PermissionedCertificateServiceTest {
     try {
       subject.save(
           mock(CredentialVersion.class),
-          "/some-name",
           value,
-          mock(GenerationParameters.class),
-          newArrayList(),
-          "overwrite",
+          generateRequest,
           newArrayList()
       );
       fail("should throw exception");

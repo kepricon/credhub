@@ -14,9 +14,7 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
-import org.cloudfoundry.credhub.request.GenerationParameters;
-import org.cloudfoundry.credhub.request.PermissionEntry;
-import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.request.*;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,14 +54,17 @@ public class PermissionedCredentialService {
   }
 
   public CredentialVersion save(
-      CredentialVersion existingCredentialVersion, String credentialName,
-      String type,
-      CredentialValue credentialValue,
-      GenerationParameters generationParameters,
-      List<PermissionEntry> accessControlEntries,
-      String overwriteMode,
-      List<EventAuditRecordParameters> auditRecordParameters
+          CredentialVersion existingCredentialVersion,
+          CredentialValue credentialValue,
+          BaseCredentialRequest generateRequest,
+          List<EventAuditRecordParameters> auditRecordParameters
   ) {
+
+    String credentialName = generateRequest.getName();
+    String type = generateRequest.getType();
+    GenerationParameters generationParameters = generateRequest.getGenerationParameters();
+    List<PermissionEntry> accessControlEntries = generateRequest.getAdditionalPermissions();
+    String overwriteMode = generateRequest.getOverwriteMode();
     final boolean isNewCredential = existingCredentialVersion == null;
 
     boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generationParameters, overwriteMode, isNewCredential);
@@ -77,14 +78,13 @@ public class PermissionedCredentialService {
     }
 
     return makeAndSaveNewCredential(
-        credentialName,
-        type,
-        credentialValue,
-        generationParameters,
-        existingCredentialVersion
+            credentialName,
+            type,
+            credentialValue,
+            generationParameters,
+            existingCredentialVersion
     );
   }
-
   public boolean delete(String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {
     auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_DELETE, credentialName));
     if (!permissionCheckingService

@@ -22,6 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
     @JsonSubTypes.Type(name = "user", value = UserGenerateRequest.class)
 })
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
+  @Override
   public abstract GenerationParameters getGenerationParameters();
 
   @Override
