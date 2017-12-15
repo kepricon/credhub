@@ -137,7 +137,7 @@ public class CredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);
 
-    DataResponse dataResponse = subject.getMostRecentCredentialVersion(
+    DataResponse dataResponse = subject.getCurrentCredentialVersions(
         CREDENTIAL_NAME,
         auditRecordParametersList
     );
@@ -149,7 +149,7 @@ public class CredentialsHandlerTest {
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialDoesNotExist_throwsException() {
     try {
-      subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, newArrayList());
+      subject.getCurrentCredentialVersions(CREDENTIAL_NAME, newArrayList());
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -162,7 +162,7 @@ public class CredentialsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, newArrayList());
+      subject.getCurrentCredentialVersions(CREDENTIAL_NAME, newArrayList());
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));

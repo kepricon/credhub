@@ -401,4 +401,17 @@ public class CredentialsControllerGetTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }
+
+  @Test
+  public void providingCurrentTrueAndVersions_throwsAnException() throws Exception {
+    final MockHttpServletRequestBuilder get =
+        get("/api/v1/data?name=" + CREDENTIAL_NAME+"&current=true&versions=45")
+            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON);
+
+    mockMvc.perform(get)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value("The query parameters current and versions cannot be provided in the same request."));
+  }
 }

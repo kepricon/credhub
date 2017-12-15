@@ -52,7 +52,7 @@ public class CredentialsHandler {
     return getNCredentialVersions(credentialName, null, auditRecordParametersList);
   }
 
-  public DataResponse getMostRecentCredentialVersion(
+  public DataResponse getCurrentCredentialVersions(
       String credentialName,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
