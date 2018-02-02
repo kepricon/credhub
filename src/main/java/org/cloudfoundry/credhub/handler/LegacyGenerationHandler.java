@@ -86,7 +86,9 @@ public class LegacyGenerationHandler {
     } catch (PathNotFoundException e) {
       // could have just returned null, that would have been pretty useful
       isRegenerateRequest = false;
-    }
+    } //catch (IllegalArgumentException e) {
+//      return false;
+//    }
     return isRegenerateRequest;
   }
 }

@@ -18,9 +18,9 @@ import org.cloudfoundry.credhub.generator.SshGenerator;
 import org.cloudfoundry.credhub.request.RsaGenerationParameters;
 import org.cloudfoundry.credhub.request.SshGenerationParameters;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +46,6 @@ import java.util.function.Consumer;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -263,5 +262,10 @@ public class CredentialsControllerGenerateTest {
     )
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value(expectedError));
+  }
+
+  @Test
+  public void generatingACredential_withEmptyRequest_returns400() throws Exception {
+
   }
 }
