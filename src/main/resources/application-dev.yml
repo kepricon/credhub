@@ -23,7 +23,7 @@ logging:
   config: src/main/resources/log4j2.properties
 
 server:
-  port: 9000
+  port: ${SKIL_CREDHUB_PORT:9000}
   ssl:
     enabled: true
     key_store: src/test/resources/key_store.jks
